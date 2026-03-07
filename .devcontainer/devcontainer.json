@@ -1,7 +1,7 @@
 {
   "name": "CRUD App Development",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
-  
+
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/terraform:1": {},
@@ -47,12 +47,13 @@
     }
   },
 
-  "mounts": [
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/node/.gitconfig,type=bind,consistency=cached",
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/node/.ssh,type=bind,consistency=cached"
-  ],
+  "runArgs": ["--env-file", ".devcontainer/devcontainer.local.env"],
+
+  "mounts": [],
 
   "postCreateCommand": "npm install -g @nestjs/cli prisma",
+
+  "postStartCommand": "if [ -n \"$GIT_USER_NAME\" ] && [ -n \"$GIT_USER_EMAIL\" ]; then git config --global user.name \"$GIT_USER_NAME\" && git config --global user.email \"$GIT_USER_EMAIL\"; fi",
 
   "remoteUser": "node"
 }
