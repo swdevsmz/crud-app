@@ -4,7 +4,33 @@
 
 devcontainer環境を構築し、チーム全体で再現可能な開発環境を提供する。
 
-## フェーズ分け
+## 必須ツールベースライン（copilot-instructions.md より）
+
+### フロントエンド開発
+- Node.js 22
+- npm
+- React + Vite + TypeScript（プロジェクト依存）
+- Tailwind CSS（プロジェクト依存）
+
+### バックエンド開発
+- NestJS + TypeScript（プロジェクト依存）
+- Prisma CLI（データベース操作）
+
+### インフラ
+- Terraform CLI（AWSリソース構築）
+- AWS CLI（Lambda/S3操作）
+
+### 開発ツール
+- Git
+- GitHub CLI
+- VS Code拡張機能（後述）
+
+## 技術選定決定ログ
+
+### ベースイメージ
+**決定**: （Phase 2で確定）
+
+**候補**:
 
 ### Phase 1: Clarification解消（仕様確定）
 
