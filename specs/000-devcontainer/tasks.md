@@ -45,11 +45,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T009 [US1] Configure Node.js 22 and core tool availability (`npm`, `git`, `gh`) in `.devcontainer/devcontainer.json`
-- [ ] T010 [P] [US1] Add optional tool installation steps (Terraform/AWS CLI/Prisma/pnpm) in `.devcontainer/devcontainer.json` based on resolved spec
-- [ ] T011 [P] [US1] Configure required forward ports (`3000`, `3001`, `5555`, and approved extras) in `.devcontainer/devcontainer.json`
-- [ ] T012 [US1] Document first-time setup and verification steps in `.devcontainer/README.md`
-- [ ] T013 [US1] Execute and document acceptance verification checklist in `specs/000-devcontainer/tasks.md` for FR-1 to FR-5
+- [x] T009 [US1] Configure Node.js 22 and core tool availability (`npm`, `git`, `gh`) in `.devcontainer/devcontainer.json`
+- [x] T010 [P] [US1] Add optional tool installation steps (Terraform/AWS CLI/Prisma/pnpm) in `.devcontainer/devcontainer.json` based on resolved spec
+- [x] T011 [P] [US1] Configure required forward ports (`3000`, `3001`, `5555`, and approved extras) in `.devcontainer/devcontainer.json`
+- [x] T012 [US1] Document first-time setup and verification steps in `.devcontainer/README.md`
+- [x] T013 [US1] Execute and document acceptance verification checklist in `specs/000-devcontainer/tasks.md` for FR-1 to FR-5
 
 **Checkpoint**: US1 は単独で動作し、新規参加者の初期セットアップが完了できる。
 
