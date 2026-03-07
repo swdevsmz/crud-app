@@ -1,0 +1,9 @@
+=== T020: Assets and Reference Files Verification ===
+
+eval_review.html:
+-rwxrwxrwx 1 node node 6.9K Mar  7 10:27 .github/skills/skill-creator/assets/eval_review.html
+
+schemas.md:
+-rwxrwxrwx 1 node node 12K Mar  7 10:27 .github/skills/skill-creator/references/schemas.md
+
+Status: Both reference files accessible

@@ -1,0 +1,26 @@
+.github/skills/skill-creator
+├── agents
+│   ├── analyzer.md
+│   ├── comparator.md
+│   └── grader.md
+├── assets
+│   └── eval_review.html
+├── eval-viewer
+│   ├── generate_review.py
+│   └── viewer.html
+├── LICENSE.txt
+├── references
+│   └── schemas.md
+├── scripts
+│   ├── aggregate_benchmark.py
+│   ├── generate_report.py
+│   ├── improve_description.py
+│   ├── __init__.py
+│   ├── package_skill.py
+│   ├── quick_validate.py
+│   ├── run_eval.py
+│   ├── run_loop.py
+│   └── utils.py
+└── SKILL.md
+
+6 directories, 18 files

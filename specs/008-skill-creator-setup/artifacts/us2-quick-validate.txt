@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/workspaces/crud-app/.github/skills/skill-creator/scripts/quick_validate.py", line 9, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
