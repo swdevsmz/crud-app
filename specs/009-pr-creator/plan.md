@@ -52,5 +52,5 @@ specs/009-pr-creator/
 
 - `--type` で `feature` / `bugfix` を明示指定する（自動推定しない）
 - commit メッセージは `--commit-message` 未指定時に自動生成する
-	- `feature`: `feat: <summary> (#<issue-number>)`
-	- `bugfix`: `fix: <summary> (#<issue-number>)`
+  - `feature`: `feat: <summary> (#<issue-number>)`
+  - `bugfix`: `fix: <summary> (#<issue-number>)`

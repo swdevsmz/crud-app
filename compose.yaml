@@ -1,0 +1,15 @@
+services:
+  localstack:
+    image: localstack/localstack:3.8
+    container_name: localstack
+    ports:
+      - '4566:4566'
+    environment:
+      - SERVICES=cognito-idp
+      - AWS_DEFAULT_REGION=ap-northeast-1
+      - DEBUG=1
+    volumes:
+      - localstack-data:/var/lib/localstack
+
+volumes:
+  localstack-data:
