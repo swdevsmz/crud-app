@@ -11,18 +11,21 @@
 ## 含まれるツール
 
 ### 必須ツール
+
 - Node.js 22
 - npm
 - Git
 - GitHub CLI
 
 ### 開発ツール
+
 - Terraform CLI
 - AWS CLI
 - NestJS CLI（postCreateCommand でインストール）
 - Prisma CLI（postCreateCommand でインストール）
 
 ### VS Code 拡張機能（自動インストール）
+
 - ESLint
 - Prettier
 - TypeScript
@@ -32,6 +35,31 @@
 - Terraform
 
 ## 使用方法
+
+### 認証情報のセットアップ（必須）
+
+**重要**: ホスト側の設定を使わず、案件ごとに独立した認証情報を使用します。
+
+1. `.devcontainer/devcontainer.local.env` ファイルを作成:
+
+   ```bash
+   cp .devcontainer/devcontainer.local.env.sample .devcontainer/devcontainer.local.env
+   ```
+
+2. `devcontainer.local.env` を編集（この案件専用の認証情報を設定）:
+
+   ```env
+   # Git identity（この案件で使用する名前とメール）
+   GIT_USER_NAME=Your Name
+   GIT_USER_EMAIL=your.email@example.com
+
+   # AWS credentials（この案件で使用するAWS認証情報）
+   AWS_ACCESS_KEY_ID=your-access-key-id
+   AWS_SECRET_ACCESS_KEY=your-secret-access-key
+   AWS_REGION=ap-northeast-1
+   ```
+
+3. ファイルは `.gitignore` で除外されているため、誤ってコミットされません
 
 ### 初回セットアップ
 
@@ -61,8 +89,15 @@ terraform --version  # 正常に動作すること
 # AWS CLI 確認
 aws --version   # 正常に動作すること
 
-# Git 設定確認
-git config --list  # ホストの設定が引き継がれていること
+# Git 設定確認（コンテナ専用設定になっているはず）
+git config --global user.name
+git config --global user.email
+
+# Git動作確認
+git -c user.useConfigOnly=true var GIT_AUTHOR_IDENT
+
+# AWS 設定確認
+env | grep AWS
 
 # NestJS CLI 確認
 nest --version  # 正常に動作すること
@@ -79,6 +114,26 @@ prisma --version  # 正常に動作すること
 - **3001**: バックエンド開発サーバー（NestJS）
 - **5555**: Prisma Studio
 
+## 設計方針
+
+### 環境分離の徹底
+
+- **ホスト側の設定を使わない**: `.gitconfig` や `~/.aws` はホストからコピーしない
+- **案件ごとに独立**: `devcontainer.local.env` で案件専用の認証情報を管理
+- **機密情報はGit管理外**: `.gitignore` で除外し、誤コミットを防止
+
+### Git設定の仕組み
+
+1. `devcontainer.local.env` → Docker起動時に環境変数として注入
+2. `postStartCommand` → コンテナ起動時に `git config --global` を実行
+3. 結果: コンテナ内の `~/.gitconfig` に反映（ホストの設定は無視）
+
+### VS Code認証の仕組み
+
+- VS Codeが `/etc/gitconfig` に credential helper を自動設定
+- これによりGitHub認証が自動的に機能
+- ホスト側の `gh.exe` などは参照しない（コンテナ完結）
+
 ## トラブルシューティング
 
 ### コンテナが起動しない
@@ -87,11 +142,22 @@ prisma --version  # 正常に動作すること
 2. VS Code の Dev Containers 拡張機能がインストールされていることを確認
 3. コンテナログを確認: View → Output → Dev Containers
 
-### Git 認証が機能しない
+### Git 認証が機能しない / コミット時にエラーが出る
 
-1. ホストマシンで `~/.gitconfig` と `~/.ssh` が存在することを確認
-2. SSH鍵のパーミッションを確認（600 または 644）
+1. `devcontainer.local.env` が作成されていることを確認
+2. `GIT_USER_NAME` と `GIT_USER_EMAIL` が正しく設定されていることを確認
 3. コンテナを再ビルド: "Dev Containers: Rebuild Container"
+4. コンテナ内で確認:
+   ```bash
+   git config --global user.name
+   git config --global user.email
+   ```
+
+### AWS CLI が認証情報を認識しない
+
+1. `devcontainer.local.env` に AWS 認証情報が設定されていることを確認
+2. 環境変数を確認: `env | grep AWS`
+3. コンテナを再ビルド
 
 ### 拡張機能が自動インストールされない
 
