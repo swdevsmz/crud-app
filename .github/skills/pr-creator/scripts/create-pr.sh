@@ -220,7 +220,10 @@ TEMPLATE_CONTENT="$(cat "$PR_TEMPLATE_PATH")"
 
 # プレースホルダ置換
 PR_BODY="${TEMPLATE_CONTENT//Closes #<issue-number>/Closes #$ISSUE_NUMBER}"
-PR_BODY="${PR_BODY//specs/<id>/spec.md/$SPEC_PATH}"
+
+# spec path 置換 (sed を使用してパス内の / をエスケープ)
+# ${VARIABLE//PATTERN/REPLACEMENT} では / を含むREPLACEMENTが複雑になるため sed を使用
+PR_BODY=$(echo "$PR_BODY" | sed "s|specs/<id>/spec\.md|$SPEC_PATH|g")
 
 # OVERVIEW が指定されていれば、テンプレートのプレースホルダを置換
 if [[ -n "$OVERVIEW" ]]; then
