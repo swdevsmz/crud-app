@@ -4,6 +4,55 @@
 
 devcontainer環境を構築し、チーム全体で再現可能な開発環境を提供する。
 
+## 必須ツールベースライン（copilot-instructions.md より）
+
+### フロントエンド開発
+- Node.js 22
+- npm
+- React + Vite + TypeScript（プロジェクト依存）
+- Tailwind CSS（プロジェクト依存）
+
+### バックエンド開発
+- NestJS + TypeScript（プロジェクト依存）
+- Prisma CLI（データベース操作）
+
+### インフラ
+- Terraform CLI（AWSリソース構築）
+- AWS CLI（Lambda/S3操作）
+
+### 開発ツール
+- Git
+- GitHub CLI
+- VS Code拡張機能（後述）
+
+## 技術選定決定ログ
+
+### ベースイメージ
+**決定**: `mcr.microsoft.com/devcontainers/typescript-node:22`
+
+**理由**:
+- Microsoft公式でメンテナンスされている
+- Node.js 22、Git、npm が事前設定済み
+- Podman互換性確認済み
+- devcontainer機能との統合が良好
+
+### 追加ツール
+**決定**: 以下を features で追加
+- GitHub CLI
+- Terraform CLI
+- AWS CLI
+- NestJS CLI & Prisma CLI（postCreateCommand で追加）
+
+### VS Code 拡張機能
+**決定**: 以下を自動インストール
+- ESLint, Prettier, TypeScript（コア開発ツール）
+- GitHub Copilot & Chat（AI支援）
+- Tailwind CSS, Prisma, Terraform（技術スタック対応）
+
+### ポート転送
+**決定**: 
+- 3000 (Vite), 3001 (NestJS), 5555 (Prisma Studio)
+
 ## フェーズ分け
 
 ### Phase 1: Clarification解消（仕様確定）

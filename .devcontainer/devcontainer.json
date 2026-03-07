@@ -1,0 +1,59 @@
+{
+  "name": "CRUD App Development",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
+
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/terraform:1": {},
+    "ghcr.io/devcontainers/features/aws-cli:1": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "typescript.tsdk": "node_modules/typescript/lib"
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next",
+        "github.copilot",
+        "github.copilot-chat",
+        "bradlc.vscode-tailwindcss",
+        "prisma.prisma",
+        "hashicorp.terraform"
+      ]
+    }
+  },
+
+  "forwardPorts": [3000, 3001, 5555],
+  "portsAttributes": {
+    "3000": {
+      "label": "Frontend (Vite)",
+      "onAutoForward": "notify"
+    },
+    "3001": {
+      "label": "Backend (NestJS)",
+      "onAutoForward": "notify"
+    },
+    "5555": {
+      "label": "Prisma Studio",
+      "onAutoForward": "silent"
+    }
+  },
+
+  "runArgs": ["--env-file", ".devcontainer/devcontainer.local.env"],
+
+  "mounts": [],
+
+  "postCreateCommand": "npm install -g @nestjs/cli prisma",
+
+  "postStartCommand": "bash -c 'rm -f ~/.gitconfig && git config --global init.defaultBranch main && [ -n \"$GIT_USER_NAME\" ] && [ -n \"$GIT_USER_EMAIL\" ] && git config --global user.name \"$GIT_USER_NAME\" && git config --global user.email \"$GIT_USER_EMAIL\" || echo \"⚠️  GIT_USER_NAME/GIT_USER_EMAIL not set\"'",
+
+  "remoteUser": "node"
+}
