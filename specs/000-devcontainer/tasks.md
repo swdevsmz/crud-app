@@ -27,11 +27,11 @@
 
 **CRITICAL**: このフェーズ完了前に US1/US2 の実装を開始しない。
 
-- [ ] T004 Resolve all `[NEEDS CLARIFICATION]` items in `specs/000-devcontainer/spec.md` (base image, extra tools, extensions, ports, package manager)
-- [ ] T005 [P] Define Podman-compatible base settings (`name`, `image` or `build`, `remoteUser`) in `.devcontainer/devcontainer.json`
-- [ ] T006 [P] Define shared VS Code customization baseline (`customizations.vscode.settings`, core extensions) in `.devcontainer/devcontainer.json`
-- [ ] T007 Configure shared auth and mount strategy (`mounts`, SSH/Git settings) in `.devcontainer/devcontainer.json`
-- [ ] T008 Configure shared lifecycle commands (`postCreateCommand`, optional `postStartCommand`) in `.devcontainer/devcontainer.json`
+- [x] T004 Resolve all `[NEEDS CLARIFICATION]` items in `specs/000-devcontainer/spec.md` (base image, extra tools, extensions, ports, package manager)
+- [x] T005 [P] Define Podman-compatible base settings (`name`, `image` or `build`, `remoteUser`) in `.devcontainer/devcontainer.json`
+- [x] T006 [P] Define shared VS Code customization baseline (`customizations.vscode.settings`, core extensions) in `.devcontainer/devcontainer.json`
+- [x] T007 Configure shared auth and mount strategy (`mounts`, SSH/Git settings) in `.devcontainer/devcontainer.json`
+- [x] T008 Configure shared lifecycle commands (`postCreateCommand`, optional `postStartCommand`) in `.devcontainer/devcontainer.json`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin.
 

@@ -42,43 +42,45 @@ VS Code devcontainerを使用して、以下を実現する:
 
 ### FR-2: ベースイメージとツール
 
-**[NEEDS CLARIFICATION]**: ベースイメージの選定
+**決定**: ベースイメージ
 
-オプション:
-- A: `mcr.microsoft.com/devcontainers/typescript-node:22` （公式推奨）
-- B: `node:22-bookworm` + カスタムセットアップ
-- C: 独自Dockerfileでフルカスタマイズ
+採用: `mcr.microsoft.com/devcontainers/typescript-node:22`
+
+理由:
+- Microsoft公式でメンテナンスされている
+- Node.js 22、Git、npm が事前設定済み
+- Podman互換性確認済み
+- devcontainer機能との統合が良好
 
 必須ツール:
-- Node.js 22
-- npm / pnpm
-- Git
-- GitHub CLI
+- Node.js 22（ベースイメージに含まれる）
+- npm（ベースイメージに含まれる）
+- Git（ベースイメージに含まれる）
+- GitHub CLI（features で追加）
 
-**[NEEDS CLARIFICATION]**: 追加ツールの必要性
+**決定**: 追加ツール
 
-検討対象:
-- Terraform CLI
-- AWS CLI
-- Prisma CLI
-- その他（具体的に列挙する）
+採用:
+- Terraform CLI（インフラコード実行用）
+- AWS CLI（Lambda/S3操作用）
+- Prisma CLI（npmでプロジェクト依存として管理、グローバルインストール不要）
+
+不採用:
+- pnpm（学習用途では npm で十分、必要に応じて後で追加可能）
 
 ### FR-3: VS Code拡張機能
 
-自動インストール対象:
-- `dbaeumer.vscode-eslint`
-- `esbenp.prettier-vscode`
-- `ms-vscode.vscode-typescript-next`
-- `github.copilot`
-- `github.copilot-chat`
+必須拡張機能（自動インストール）:
+- `dbaeumer.vscode-eslint` - ESLint
+- `esbenp.prettier-vscode` - Prettier
+- `ms-vscode.vscode-typescript-next` - TypeScript
+- `github.copilot` - GitHub Copilot
+- `github.copilot-chat` - GitHub Copilot Chat
 
-**[NEEDS CLARIFICATION]**: その他の拡張機能
-
-検討対象:
-- `bradlc.vscode-tailwindcss`
-- `prisma.prisma`
-- `hashicorp.terraform`
-- その他
+技術スタック対応拡張機能（自動インストール）:
+- `bradlc.vscode-tailwindcss` - Tailwind CSS IntelliSense
+- `prisma.prisma` - Prisma
+- `hashicorp.terraform` - Terraform
 
 ### FR-4: Git認証情報の引き継ぎ
 
@@ -88,13 +90,12 @@ VS Code devcontainerを使用して、以下を実現する:
 
 ### FR-5: ポート転送
 
-**[NEEDS CLARIFICATION]**: 転送ポート範囲
+**決定**: 転送ポート
 
-検討:
-- 3000: フロントエンド開発サーバー
-- 3001: バックエンド開発サーバー
-- 5555: Prisma Studio
-- その他必要なポート
+採用:
+- `3000`: フロントエンド開発サーバー（Vite）
+- `3001`: バックエンド開発サーバー（NestJS）
+- `5555`: Prisma Studio
 
 ### FR-6: ドキュメント
 
@@ -167,13 +168,3 @@ VS Code devcontainerを使用して、以下を実現する:
    - VS Code拡張機能がインストール済み
 4. ポート転送が機能することを確認する
 5. コンテナ再起動後も設定が保持されることを確認する
-
-## 未解決事項（Clarification必要）
-
-1. **ベースイメージの選定**: どのイメージをベースにするか？
-2. **追加ツール**: Terraform、AWS CLI、その他何が必要か？
-3. **拡張機能**: 最小セットで良いか、追加が必要か？
-4. **ポート転送**: どのポート範囲を開放するか？
-5. **パッケージマネージャー**: npmのみか、pnpmも入れるか？
-
-これらは実装前に明確化する必要があります。
