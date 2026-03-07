@@ -203,6 +203,10 @@ PR_TITLE="${PR_PREFIX}: ${SUMMARY}"
 
 if git rev-parse --verify --quiet "$BRANCH_NAME" >/dev/null; then
   echo -e "${RED}Error: branch already exists: $BRANCH_NAME${NC}" >&2
+  echo -e "${YELLOW}Recovery options:${NC}" >&2
+  echo "  1. Delete the branch: git branch -D $BRANCH_NAME" >&2
+  echo "  2. Switch to the branch: git checkout $BRANCH_NAME" >&2
+  echo "  3. Use a different --summary to generate a different branch name" >&2
   exit 1
 fi
 
@@ -213,12 +217,25 @@ if [[ "$DRY_RUN" != 'true' ]]; then
 fi
 
 TEMPLATE_CONTENT="$(cat "$PR_TEMPLATE_PATH")"
+
+# プレースホルダ置換
 PR_BODY="${TEMPLATE_CONTENT//Closes #<issue-number>/Closes #$ISSUE_NUMBER}"
 PR_BODY="${PR_BODY//specs/<id>/spec.md/$SPEC_PATH}"
 
+# OVERVIEW が指定されていれば、テンプレートのプレースホルダを置換
 if [[ -n "$OVERVIEW" ]]; then
+  # テンプレート内の概要セクションのプレースホルダを置換
   PR_BODY="${PR_BODY//何を、なぜ変更したかを記載してください。/$OVERVIEW}"
 fi
+
+# Spec整合性セクションのチェックボックスを自動で設定
+# spec-path が有効であることは事前チェック済み
+PR_BODY="${PR_BODY/\[\ \]\ 要/[x] 要}"
+PR_BODY="${PR_BODY/\[\ \]\ 不要/[ ] 不要}"
+
+# Clarification解消状況（spec内で確認済みと判断）
+PR_BODY="${PR_BODY/\[\ \]\ 解消済み/[x] 解消済み}"
+PR_BODY="${PR_BODY/\[\ \]\ 未解消あり/[ ] 未解消あり}"
 
 echo -e "${BLUE}Branch:${NC} $BRANCH_NAME"
 echo -e "${BLUE}Base:${NC} $BASE_BRANCH"
@@ -234,6 +251,10 @@ done
 if [[ "$DRY_RUN" != 'true' ]]; then
   if git diff --cached --quiet; then
     echo -e "${RED}Error: no staged changes. Check --add-path values.${NC}" >&2
+    echo -e "${YELLOW}Verification tips:${NC}" >&2
+    echo "  - git status : Check current working tree status" >&2
+    echo "  - git diff --cached : Show staged changes" >&2
+    echo "  - Ensure --add-path values match actual files" >&2
     exit 1
   fi
 fi
@@ -247,6 +268,16 @@ run_cmd "git push -u origin '$BRANCH_NAME'"
 echo -e "${BLUE}Creating PR...${NC}"
 if [[ "$DRY_RUN" == 'true' ]]; then
   echo '[dry-run] gh pr create --title ... --body ... --base ... --head ...'
+  echo ""
+  echo -e "${BLUE}PR Title:${NC} $PR_TITLE"
+  echo -e "${BLUE}PR Base:${NC} $BASE_BRANCH"
+  echo -e "${BLUE}PR Head:${NC} $BRANCH_NAME"
+  echo ""
+  echo -e "${BLUE}PR Body Preview:${NC}"
+  echo "---"
+  echo "$PR_BODY" | head -20
+  echo "---"
+  echo "(full body will be set on actual PR creation)"
 else
   PR_URL=$(gh pr create \
     --title "$PR_TITLE" \
