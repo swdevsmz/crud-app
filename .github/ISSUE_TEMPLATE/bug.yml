@@ -1,0 +1,66 @@
+name: バグ報告
+description: 再現可能な証跡つきで不具合を報告します。
+title: "fix: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        このテンプレートで再現可能な不具合情報を記録してください。
+  - type: textarea
+    id: summary
+    attributes:
+      label: 不具合概要
+      description: 何が問題ですか？
+      placeholder: 不具合の要約
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: 番号付きで再現手順を記載してください。
+      placeholder: |
+        1. ... へ移動
+        2. ... をクリック
+        3. ... が発生
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待する動作
+      placeholder: 本来どうなるべきか
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の動作
+      placeholder: 実際に何が起きたか
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: 影響範囲
+      description: 誰に、どの程度の影響がありますか？
+      placeholder: 対象範囲、重大度、影響機能
+    validations:
+      required: true
+  - type: textarea
+    id: checks
+    attributes:
+      label: 修正後の確認観点
+      description: 修正後に再確認すべき項目を記載してください。
+      placeholder: |
+        - [ ] 退行確認A
+        - [ ] 退行確認B
+    validations:
+      required: true
+  - type: input
+    id: spec_path
+    attributes:
+      label: 関連specパス（任意）
+      placeholder: specs/<id>/spec.md

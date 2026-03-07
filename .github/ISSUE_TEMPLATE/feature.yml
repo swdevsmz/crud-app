@@ -1,0 +1,58 @@
+name: 機能追加
+description: Spec-Firstの証跡を残しながら新機能を計画します。
+title: "feat: "
+labels:
+  - feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        実装前に、このテンプレートで機能要件と証跡を定義してください。
+  - type: input
+    id: problem
+    attributes:
+      label: 背景・課題
+      description: 何を解決する機能ですか？
+      placeholder: 現在の課題と背景
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: 目的
+      description: この機能でどのような成果を得ますか？
+      placeholder: ユーザーとシステムの期待成果
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 受け入れ条件
+      description: テスト可能な条件を列挙してください。
+      placeholder: |
+        - [ ] 条件1
+        - [ ] 条件2
+    validations:
+      required: true
+  - type: input
+    id: spec_path
+    attributes:
+      label: 対象specパス
+      description: specファイルのパス（例: specs/001-auth/spec.md）
+      placeholder: specs/<id>/spec.md
+    validations:
+      required: true
+  - type: dropdown
+    id: clarification
+    attributes:
+      label: Clarificationはすべて解消済みですか？
+      options:
+        - はい（未解消項目なし）
+        - いいえ（未解消項目あり）
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: 補足
+      description: リスク、依存関係、制約など。

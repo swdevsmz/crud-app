@@ -123,7 +123,7 @@ Vercel公開のAgentSkills / Vercel AI SDKスタイルをベースにする。
 
 すべての変更で以下を必須とする。
 
-1. GitHub Issueを作成する
+1. GitHub Issueを作成する（AgentSkillで草案作成し、GitHub Copilot CLIで整えてから登録する）
 2. ブランチを作成する（`feature/issue-<n>-<slug>` または `bugfix/issue-<n>-<slug>`）
 3. SpecKit成果物（`spec.md`, `plan.md`, `tasks.md`）を確認・更新する
 4. ローカルで実装する（人間主導）
