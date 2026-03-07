@@ -41,7 +41,7 @@ Required:
   --problem TEXT          解決したい課題・背景
   --goal TEXT             実装で達成したい目標
   --acceptance TEXT       完了判定基準（チェックリスト推奨）
-  --clarification TEXT    明確化状態（enum: "はい（未解済項目なし）" | "いいえ（未解済項目あり）"）
+  --clarification TEXT    明確化状態（enum: "はい（未解消項目なし）" | "いいえ（未解消項目あり）"）
 
 Optional:
   --spec-path PATH        仕様ファイルパス（未指定時は自動推論）
@@ -53,7 +53,7 @@ Example:
     --problem "ユーザー認証機能がない" \\
     --goal "ユーザーが安全にログインできる" \\
     --acceptance "- [ ] ログイン画面が表示できる\n- [ ] 認証が成功する" \\
-    --clarification "はい（未解済項目なし）"
+    --clarification "はい（未解消項目なし）"
 EOF
   exit 1
 }
@@ -114,7 +114,7 @@ if [[ ${#MISSING_FIELDS[@]} -gt 0 ]]; then
 fi
 
 # clarification値の検証（enum）
-VALID_CLARIFICATIONS=("はい（未解済項目なし）" "いいえ（未解済項目あり）")
+VALID_CLARIFICATIONS=("はい（未解消項目なし）" "いいえ（未解消項目あり）")
 CLARIFICATION_VALID=false
 for valid in "${VALID_CLARIFICATIONS[@]}"; do
   if [[ "$CLARIFICATION" == "$valid" ]]; then
