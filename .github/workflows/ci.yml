@@ -1,72 +1,72 @@
 name: CI
 
 on:
-  # PR作成/更新時に品質ゲートを実行する
-  pull_request:
-    branches: [main]
-  # 手動実行用（運用確認や検証時に利用）
-  workflow_dispatch:
+    # PR作成/更新時に品質ゲートを実行する
+    pull_request:
+        branches: [main]
+    # 手動実行用（運用確認や検証時に利用）
+    workflow_dispatch:
 
 jobs:
-  quality-gates:
-    name: quality-gates
-    runs-on: ubuntu-latest
-    steps:
-      # リポジトリ内容を取得
-      - name: Checkout
-        uses: actions/checkout@v4
+    quality-gates:
+        name: quality-gates
+        runs-on: ubuntu-latest
+        steps:
+            # リポジトリ内容を取得
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      # Node.js環境をセットアップ
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+            # Node.js環境をセットアップ
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "22"
 
-      # モノレポを想定し、package.jsonを持つプロジェクトを列挙
-      - name: Discover package.json files
-        id: discover
-        shell: bash
-        run: |
-          set -euo pipefail
-          mapfile -t files < <(find . -type f -name package.json -not -path '*/node_modules/*' -not -path '*/.git/*' | sort)
-          if [ "${#files[@]}" -eq 0 ]; then
-            echo "has_projects=false" >> "$GITHUB_OUTPUT"
-            echo "package.json が見つからないため、品質ゲートをスキップします。"
-            exit 0
-          fi
+            # モノレポを想定し、package.jsonを持つプロジェクトを列挙
+            - name: Discover package.json files
+              id: discover
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  mapfile -t files < <(find . -type f -name package.json -not -path '*/node_modules/*' -not -path '*/.git/*' | sort)
+                  if [ "${#files[@]}" -eq 0 ]; then
+                    echo "has_projects=false" >> "$GITHUB_OUTPUT"
+                    echo "package.json が見つからないため、品質ゲートをスキップします。"
+                    exit 0
+                  fi
 
-          echo "has_projects=true" >> "$GITHUB_OUTPUT"
-          {
-            echo "project_list<<EOF"
-            printf '%s\n' "${files[@]}"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+                  echo "has_projects=true" >> "$GITHUB_OUTPUT"
+                  {
+                    echo "project_list<<EOF"
+                    printf '%s\n' "${files[@]}"
+                    echo "EOF"
+                  } >> "$GITHUB_OUTPUT"
 
-      # 各プロジェクトで lint/type-check/test/build を順に実行
-      - name: Run quality gates in each project
-        if: steps.discover.outputs.has_projects == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          while IFS= read -r pkg; do
-            [ -z "$pkg" ] && continue
-            dir=$(dirname "$pkg")
-            echo "---"
-            echo "対象プロジェクト: $dir"
-            pushd "$dir" > /dev/null
+            # 各プロジェクトで lint/type-check/test/build を順に実行
+            - name: Run quality gates in each project
+              if: steps.discover.outputs.has_projects == 'true'
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  while IFS= read -r pkg; do
+                    [ -z "$pkg" ] && continue
+                    dir=$(dirname "$pkg")
+                    echo "---"
+                    echo "対象プロジェクト: $dir"
+                    pushd "$dir" > /dev/null
 
-            # lockfile がある場合は再現性優先で npm ci、なければ npm install
-            if [ -f package-lock.json ]; then
-              npm ci
-            else
-              npm install
-            fi
+                    # lockfile がある場合は再現性優先で npm ci、なければ npm install
+                    if [ -f package-lock.json ]; then
+                      npm ci
+                    else
+                      npm install
+                    fi
 
-            # スクリプトが未定義でも失敗させない（初期フェーズ向け）
-            npm run --if-present lint
-            npm run --if-present type-check
-            npm run --if-present test
-            npm run --if-present build
+                    # スクリプトが未定義でも失敗させない（初期フェーズ向け）
+                    npm run --if-present lint
+                    npm run --if-present type-check
+                    npm run --if-present test
+                    npm run --if-present build
 
-            popd > /dev/null
-          done <<< "${{ steps.discover.outputs.project_list }}"
+                    popd > /dev/null
+                  done <<< "${{ steps.discover.outputs.project_list }}"
