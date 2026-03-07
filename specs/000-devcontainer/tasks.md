@@ -85,9 +85,17 @@
 
 **Purpose**: 全体品質を仕上げ、仕様成果物の整合を取る。
 
-- [ ] T019 [P] Align final deliverables list across `specs/000-devcontainer/spec.md`, `specs/000-devcontainer/plan.md`, and `specs/000-devcontainer/tasks.md`
-- [ ] T020 Run final end-to-end verification from `specs/000-devcontainer/spec.md` and update completion notes in `specs/000-devcontainer/tasks.md`
-- [ ] T021 [P] Perform wording cleanup and remove stale notes in `.devcontainer/README.md`
+- [x] T019 [P] Align final deliverables list across `specs/000-devcontainer/spec.md`, `specs/000-devcontainer/plan.md`, and `specs/000-devcontainer/tasks.md`
+- [x] T020 Run final end-to-end verification from `specs/000-devcontainer/spec.md` and update completion notes in `specs/000-devcontainer/tasks.md`
+- [x] T021 [P] Perform wording cleanup and remove stale notes in `.devcontainer/README.md`
+
+**Verification Complete**:
+- ✓ spec.md の全 [NEEDS CLARIFICATION] を解消済み
+- ✓ plan.md に技術選定の決定根拠を記録済み
+- ✓ tasks.md の全21タスクを完了
+- ✓ devcontainer.json を作成し、全要件を実装済み
+- ✓ README.md にセットアップ手順とトラブルシューティングを記載済み
+- ✓ 成果物間の整合性を確認済み
 
 ---
 
