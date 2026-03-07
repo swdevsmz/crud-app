@@ -76,7 +76,7 @@ Issue URL 返却
 `scripts/create-feature-issue.sh` が以下を実行:
 
 1. 必須フラグ検証（`--summary`, `--problem`, `--goal`, `--acceptance`, `--clarification`）
-2. clarification 値の検証（enum: `はい（未解済項目なし）` | `いいえ（未解済項目あり）`）
+2. clarification 値の検証（enum: `はい（未解消項目なし）` | `いいえ（未解消項目あり）`）
 3. spec_path 未指定時の自動推論
 4. spec_path フォーマット検証（`^specs/[0-9]{3}-[a-z0-9-]+/spec\.md$`）
 5. テンプレート展開（`assets/feature-issue-body-template.md`）

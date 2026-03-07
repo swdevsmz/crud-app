@@ -9,7 +9,7 @@
 #     --problem "解決したい問題" \
 #     --goal "達成したいこと" \
 #     --acceptance "受入条件" \
-#     --clarification "はい（未解済項目なし）" \
+#     --clarification "はい（未解消項目なし）" \
 #     [--spec-path "specs/NNN-slug/spec.md"] \
 #     [--notes "追加メモ"]
 
@@ -31,8 +31,67 @@ CLARIFICATION=""
 SPEC_PATH=""
 NOTES=""
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TEMPLATE_PATH="${SCRIPT_DIR}/../assets/feature-issue-body-template.md"
+FEATURE_TEMPLATE_PATH="${SCRIPT_DIR}/../../../ISSUE_TEMPLATE/feature.yml"
+
+# デフォルト値（feature.yml読み込み失敗時に使用）
+DEFAULT_LABEL="feature"
+VALID_CLARIFICATIONS=("はい（未解消項目なし）" "いいえ（未解消項目あり）")
+
+load_defaults_from_feature_template() {
+  if [[ ! -f "$FEATURE_TEMPLATE_PATH" ]]; then
+    echo -e "${YELLOW}⚠️  feature.yml not found: $FEATURE_TEMPLATE_PATH${NC}" >&2
+    return
+  fi
+
+  # labels セクションの先頭ラベルを取得
+  local parsed_label
+  parsed_label=$(awk '
+    /^labels:/ { in_labels=1; next }
+    in_labels && /^body:/ { in_labels=0 }
+    in_labels && /^[[:space:]]*-[[:space:]]+/ {
+      line=$0
+      sub(/^[[:space:]]*-[[:space:]]+/, "", line)
+      gsub(/\r$/, "", line)
+      print line
+      exit
+    }
+  ' "$FEATURE_TEMPLATE_PATH")
+
+  if [[ -n "$parsed_label" ]]; then
+    DEFAULT_LABEL="$parsed_label"
+  fi
+
+  # clarification の options を取得
+  local parsed_options=()
+  mapfile -t parsed_options < <(awk '
+    /^[[:space:]]*id:[[:space:]]*clarification[[:space:]]*$/ { in_clarification=1; next }
+    in_clarification && /^[[:space:]]*id:[[:space:]]*/ { in_clarification=0 }
+    in_clarification && /^[[:space:]]*options:[[:space:]]*$/ { in_options=1; next }
+    in_options && /^[[:space:]]*-[[:space:]]+/ {
+      line=$0
+      sub(/^[[:space:]]*-[[:space:]]+/, "", line)
+      gsub(/\r$/, "", line)
+      print line
+      next
+    }
+    in_options && /^[[:space:]]*[a-zA-Z_]+:/ { in_options=0 }
+  ' "$FEATURE_TEMPLATE_PATH")
+
+  if [[ ${#parsed_options[@]} -gt 0 ]]; then
+    VALID_CLARIFICATIONS=("${parsed_options[@]}")
+  fi
+}
+
+load_defaults_from_feature_template
+
 # 使用方法表示
 usage() {
+  local clarification_enum
+  clarification_enum=$(printf '"%s" | ' "${VALID_CLARIFICATIONS[@]}")
+  clarification_enum=${clarification_enum% | }
+
   cat <<EOF
 Usage: $0 [OPTIONS]
 
@@ -41,7 +100,7 @@ Required:
   --problem TEXT          解決したい課題・背景
   --goal TEXT             実装で達成したい目標
   --acceptance TEXT       完了判定基準（チェックリスト推奨）
-  --clarification TEXT    明確化状態（enum: "はい（未解消項目なし）" | "いいえ（未解消項目あり）"）
+  --clarification TEXT    明確化状態（enum: ${clarification_enum}）
 
 Optional:
   --spec-path PATH        仕様ファイルパス（未指定時は自動推論）
@@ -53,7 +112,7 @@ Example:
     --problem "ユーザー認証機能がない" \\
     --goal "ユーザーが安全にログインできる" \\
     --acceptance "- [ ] ログイン画面が表示できる\n- [ ] 認証が成功する" \\
-    --clarification "はい（未解消項目なし）"
+    --clarification "${VALID_CLARIFICATIONS[0]}"
 EOF
   exit 1
 }
@@ -113,8 +172,7 @@ if [[ ${#MISSING_FIELDS[@]} -gt 0 ]]; then
   usage
 fi
 
-# clarification値の検証（enum）
-VALID_CLARIFICATIONS=("はい（未解消項目なし）" "いいえ（未解消項目あり）")
+# clarification値の検証（feature.yml由来のenum）
 CLARIFICATION_VALID=false
 for valid in "${VALID_CLARIFICATIONS[@]}"; do
   if [[ "$CLARIFICATION" == "$valid" ]]; then
@@ -170,10 +228,6 @@ if [[ ! "$SPEC_PATH" =~ $SPEC_PATH_REGEX ]]; then
   exit 1
 fi
 
-# テンプレート読み込み
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TEMPLATE_PATH="${SCRIPT_DIR}/../assets/feature-issue-body-template.md"
-
 if [[ ! -f "$TEMPLATE_PATH" ]]; then
   echo -e "${RED}❌ Error: Template not found: $TEMPLATE_PATH${NC}" >&2
   exit 1
@@ -190,10 +244,10 @@ BODY="${BODY//\{\{SPEC_PATH\}\}/$SPEC_PATH}"
 BODY="${BODY//\{\{CLARIFICATION\}\}/$CLARIFICATION}"
 BODY="${BODY//\{\{NOTES\}\}/${NOTES:-（なし）}}"
 
-# ラベル決定（feature → enhancement フォールバック）
-LABEL="feature"
-if ! gh label list --limit 1000 | grep -qw "^feature"; then
-  echo -e "${YELLOW}⚠️  'feature' label not found, falling back to 'enhancement'${NC}"
+# ラベル決定（feature.yml定義ラベル → enhancement フォールバック）
+LABEL="$DEFAULT_LABEL"
+if ! gh label list --limit 1000 | grep -qw "^${LABEL}"; then
+  echo -e "${YELLOW}⚠️  '${LABEL}' label not found, falling back to 'enhancement'${NC}"
   LABEL="enhancement"
 fi
 
