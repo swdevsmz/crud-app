@@ -1,0 +1,20 @@
+=== Script Inventory ===
+
+Core Evaluation Scripts:
+-rwxrwxrwx 1 node node 15K Mar  7 10:27 .github/skills/skill-creator/scripts/aggregate_benchmark.py
+-rwxrwxrwx 1 node node 11K Mar  7 10:27 .github/skills/skill-creator/scripts/improve_description.py
+-rwxrwxrwx 1 node node 12K Mar  7 10:27 .github/skills/skill-creator/scripts/run_eval.py
+-rwxrwxrwx 1 node node 14K Mar  7 10:27 .github/skills/skill-creator/scripts/run_loop.py
+
+Supporting Scripts:
+-rwxrwxrwx 1 node node  13K Mar  7 10:27 .github/skills/skill-creator/scripts/generate_report.py
+-rwxrwxrwx 1 node node    0 Mar  7 10:27 .github/skills/skill-creator/scripts/__init__.py
+-rwxrwxrwx 1 node node 4.2K Mar  7 10:27 .github/skills/skill-creator/scripts/package_skill.py
+-rwxrwxrwx 1 node node 3.9K Mar  7 10:27 .github/skills/skill-creator/scripts/quick_validate.py
+-rwxrwxrwx 1 node node 1.7K Mar  7 10:27 .github/skills/skill-creator/scripts/utils.py
+
+Eval-Viewer Script:
+-rwxrwxrwx 1 node node 16K Mar  7 10:27 .github/skills/skill-creator/eval-viewer/generate_review.py
+
+=== Summary ===
+All required scripts present with executable permissions (-rwx)

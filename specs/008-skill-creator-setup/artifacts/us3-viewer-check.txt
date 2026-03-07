@@ -1,0 +1,10 @@
+=== T019: eval-viewer Files Verification ===
+
+viewer.html:
+-rwxrwxrwx 1 node node 44K Mar  7 10:27 .github/skills/skill-creator/eval-viewer/viewer.html
+
+generate_review.py:
+-rwxrwxrwx 1 node node 16K Mar  7 10:27 .github/skills/skill-creator/eval-viewer/generate_review.py
+
+Status: Both files accessible
+T021: Verification results match quickstart.md procedure - no updates needed
