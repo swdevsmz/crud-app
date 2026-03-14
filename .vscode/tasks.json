@@ -1,0 +1,105 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "npm: install (backend)",
+      "type": "shell",
+      "command": "npm",
+      "args": ["install"],
+      "path": "${workspaceFolder}/backend",
+      "problemMatcher": ["$npm"]
+    },
+    {
+      "label": "npm: build (backend)",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "build"],
+      "cwd": "${workspaceFolder}/backend",
+      "problemMatcher": ["$tsc"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "npm: start:dev (backend)",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "start:dev"],
+      "cwd": "${workspaceFolder}/backend",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^npm notice",
+          "endsPattern": "Watching for file changes"
+        }
+      }
+    },
+    {
+      "label": "npm: type-check (backend)",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "type-check"],
+      "cwd": "${workspaceFolder}/backend",
+      "problemMatcher": ["$tsc"],
+      "group": "build"
+    },
+    {
+      "label": "npm: lint (backend)",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "lint"],
+      "cwd": "${workspaceFolder}/backend",
+      "isBackground": false,
+      "group": "build"
+    },
+    {
+      "label": "npm: test (backend)",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "test"],
+      "cwd": "${workspaceFolder}/backend",
+      "isBackground": false,
+      "group": "test"
+    },
+    {
+      "label": "prisma: migrate dev",
+      "type": "shell",
+      "command": "npx",
+      "args": ["prisma", "migrate", "dev"],
+      "cwd": "${workspaceFolder}/backend",
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "prisma: studio",
+      "type": "shell",
+      "command": "npx",
+      "args": ["prisma", "studio"],
+      "cwd": "${workspaceFolder}/backend",
+      "isBackground": true,
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "docker-compose: up",
+      "type": "shell",
+      "command": "docker-compose",
+      "args": ["up", "-d"],
+      "cwd": "${workspaceFolder}",
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "docker-compose: down",
+      "type": "shell",
+      "command": "docker-compose",
+      "args": ["down"],
+      "cwd": "${workspaceFolder}",
+      "problemMatcher": [],
+      "group": "build"
+    }
+  ]
+}

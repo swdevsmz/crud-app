@@ -1,0 +1,343 @@
+openapi: 3.0.3
+info:
+  title: User Signup API
+  description: |
+    API specification for user signup and email verification endpoints.
+    Supports dual deployment:
+    - Local development: http://localhost:3001/api
+    - Production: https://api.{domain}/prod
+  version: 1.0.0
+  contact:
+    name: CRUD App Team
+
+servers:
+  - url: http://localhost:3001/api
+    description: Local development server
+  - url: https://api.example.com/prod
+    description: Production (AWS Lambda + API Gateway)
+
+tags:
+  - name: Authentication
+    description: User authentication operations
+
+paths:
+  /auth/signup:
+    post:
+      tags:
+        - Authentication
+      summary: Create new user account
+      description: |
+        Register a new user with email and password. Creates an UNCONFIRMED user
+        in AWS Cognito and triggers a verification email.
+
+        **Acceptance Criteria**:
+        - FR-001: Three input fields (email, password, passwordConfirm)
+        - FR-002: Email format validation (RFC 5322)
+        - FR-003: Password strength validation
+        - FR-004: Password confirmation match
+        - FR-006: Create user in Cognito
+        - FR-007: Send verification email
+        - FR-009: Prevent duplicate accounts
+      operationId: signup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupRequest"
+            examples:
+              validSignup:
+                summary: Valid signup request
+                value:
+                  email: user@example.com
+                  password: SecurePass123!
+                  passwordConfirm: SecurePass123!
+              weakPassword:
+                summary: Password too weak
+                value:
+                  email: user@example.com
+                  password: weak
+                  passwordConfirm: weak
+      responses:
+        "201":
+          description: Account created successfully, verification email sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignupResponse"
+              example:
+                message: Account created successfully. Please check your email to verify your account.
+                email: user@example.com
+        "400":
+          description: Validation error - invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalidEmail:
+                  summary: Invalid email format
+                  value:
+                    statusCode: 400
+                    message:
+                      - Please enter a valid email address
+                    error: Bad Request
+                weakPassword:
+                  summary: Weak password
+                  value:
+                    statusCode: 400
+                    message:
+                      - Password must be at least 8 characters and include uppercase, lowercase, number, and special character
+                    error: Bad Request
+                passwordMismatch:
+                  summary: Passwords don't match
+                  value:
+                    statusCode: 400
+                    message:
+                      - Passwords do not match
+                    error: Bad Request
+        "409":
+          description: Conflict - email already registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 409
+                message: This email is already registered. Please log in or use a different email.
+                error: Conflict
+        "503":
+          description: Service unavailable - Cognito or email service failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 503
+                message: Service temporarily unavailable. Please try again in a few minutes.
+                error: Service Unavailable
+
+  /auth/verify:
+    get:
+      tags:
+        - Authentication
+      summary: Verify email address and auto-login
+      description: |
+        Confirm user's email address using verification code from email link.
+        Upon successful verification, automatically logs in the user and returns
+        authentication tokens.
+
+        **Acceptance Criteria**:
+        - FR-008: Validate time-limited verification code
+        - FR-017: Auto-login after successful verification
+
+        **Flow**:
+        1. User clicks link in verification email
+        2. Backend validates code via Cognito ConfirmSignUp
+        3. Backend initiates auth via Cognito InitiateAuth
+        4. Returns access/ID tokens
+        5. Frontend stores tokens and redirects to dashboard
+      operationId: verifyEmail
+      parameters:
+        - name: email
+          in: query
+          required: true
+          description: User's email address
+          schema:
+            type: string
+            format: email
+            example: user@example.com
+        - name: code
+          in: query
+          required: true
+          description: Verification code from email (6 digits)
+          schema:
+            type: string
+            pattern: '^\d{6}$'
+            example: "123456"
+      responses:
+        "200":
+          description: Email verified successfully, user authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerifyResponse"
+              example:
+                message: Email verified successfully
+                accessToken: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+                idToken: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+                refreshToken: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+                expiresIn: 3600
+                redirectUrl: /dashboard
+        "400":
+          description: Bad request - invalid or missing parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalidCode:
+                  summary: Invalid verification code
+                  value:
+                    statusCode: 400
+                    message: Invalid verification code. Please check the code in your email.
+                    error: Bad Request
+                missingParams:
+                  summary: Missing email or code
+                  value:
+                    statusCode: 400
+                    message:
+                      - email is required
+                      - code is required
+                    error: Bad Request
+        "410":
+          description: Gone - verification code expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 410
+                message: Verification code has expired. Please request a new verification email.
+                error: Gone
+        "404":
+          description: Not found - user does not exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 404
+                message: User not found
+                error: Not Found
+        "503":
+          description: Service unavailable - Cognito failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 503
+                message: Service temporarily unavailable. Please try again in a few minutes.
+                error: Service Unavailable
+
+components:
+  schemas:
+    SignupRequest:
+      type: object
+      required:
+        - email
+        - password
+        - passwordConfirm
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 3
+          maxLength: 254
+          description: User's email address (will be used as username)
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]).{8,128}$'
+          description: |
+            Password must meet the following requirements:
+            - At least 8 characters
+            - At least one uppercase letter (A-Z)
+            - At least one lowercase letter (a-z)
+            - At least one number (0-9)
+            - At least one special character (!@#$%^&*()_+-=[]{}|;:,.<>?)
+          example: SecurePass123!
+        passwordConfirm:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          description: Password confirmation (must match password field)
+          example: SecurePass123!
+
+    SignupResponse:
+      type: object
+      required:
+        - message
+        - email
+      properties:
+        message:
+          type: string
+          description: Success message instructing user to check email
+          example: Account created successfully. Please check your email to verify your account.
+        email:
+          type: string
+          format: email
+          description: Email address where verification link was sent
+          example: user@example.com
+
+    VerifyResponse:
+      type: object
+      required:
+        - message
+        - accessToken
+        - idToken
+        - expiresIn
+        - redirectUrl
+      properties:
+        message:
+          type: string
+          description: Success message
+          example: Email verified successfully
+        accessToken:
+          type: string
+          description: JWT access token for API authentication
+          example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+        idToken:
+          type: string
+          description: JWT ID token containing user claims
+          example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+        refreshToken:
+          type: string
+          description: Refresh token for obtaining new access tokens
+          example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+        expiresIn:
+          type: integer
+          description: Token expiration time in seconds
+          example: 3600
+        redirectUrl:
+          type: string
+          description: URL to redirect user to after successful login
+          example: /dashboard
+
+    ErrorResponse:
+      type: object
+      required:
+        - statusCode
+        - message
+        - error
+      properties:
+        statusCode:
+          type: integer
+          description: HTTP status code
+          example: 400
+        message:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          description: Error message or array of validation errors
+          example: Please enter a valid email address
+        error:
+          type: string
+          description: Error type
+          example: Bad Request
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token from verification response
+
+security: [] # No authentication required for signup/verify endpoints
