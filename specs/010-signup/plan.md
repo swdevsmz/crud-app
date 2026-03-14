@@ -5,7 +5,7 @@
 
 ## Summary
 
-Implement a complete user signup flow with email/password registration, real-time form validation, and email verification. Users will be able to create accounts through AWS Cognito (LocalStack for local development), with automatic login and redirect to the TOP menu screen upon successful email verification. The implementation follows a dual-endpoint strategy supporting both local development (NestJS HTTP server) and production deployment (AWS Lambda + API Gateway).
+Implement a complete user signup flow with email/password registration, real-time form validation, and email verification. Users will be able to create accounts through AWS Cognito (development account/environment), with automatic login and redirect to the TOP menu screen upon successful email verification. The implementation follows a dual-endpoint strategy supporting both local development (NestJS HTTP server) and production deployment (AWS Lambda + API Gateway).
 
 ## Technical Context
 
@@ -14,12 +14,12 @@ Implement a complete user signup flow with email/password registration, real-tim
 
 - Frontend: React 18+, Vite 5+, Jotai (state), Tailwind CSS (UI), axios (HTTP), React Router (routing)
 - Backend: NestJS 10+, @nestjs/swagger (API docs), class-validator/class-transformer (validation)
-- Auth: AWS SDK v3 Cognito client, LocalStack (local dev)
+- Auth: AWS SDK v3 Cognito client (AWS development account/environment)
 - ORM: Prisma 5+ (SQLite)
   **Storage**:
 - Local dev: Persistent SQLite file
 - Lambda: `/tmp` SQLite (volatile, learning mode - NOT production-persistent)
-- Auth data: AWS Cognito User Pool (or LocalStack equivalent)
+- Auth data: AWS Cognito User Pool
   **Testing**:
 - Frontend: Vitest + React Testing Library
 - Backend: Jest + Supertest
@@ -76,7 +76,7 @@ Based on `.github/copilot-instructions.md` principles:
 ### ✅ Cost Consciousness (Section 4)
 
 - [x] AWS free tier prioritized
-- [x] LocalStack for local Cognito
+- [x] 開発時点からAWS Cognito（開発用アカウント/環境）を利用
 - [x] Lambda memory/timeout minimized
 - [x] Email verification: Cognito default email (50/day, sufficient for MVP - verified in research.md)
 
@@ -236,7 +236,7 @@ No violations detected. This feature follows standard patterns:
               │                              │
     ┌─────────▼──────────┐        ┌─────────▼─────────┐
     │  AWS Cognito       │        │  SQLite Database  │
-    │  (or LocalStack)   │        │  (user metadata)  │
+    │ (development env)  │        │  (user metadata)  │
     └─────────┬──────────┘        └───────────────────┘
               │
     ┌─────────▼──────────┐
@@ -353,7 +353,7 @@ User                Frontend           Backend (NestJS)      AWS Cognito       E
 5. Frontend scaffolding (pages, components, hooks)
 6. Form validation logic
 7. State management (Jotai atoms)
-8. LocalStack setup (Compose file, setup script)
+8. AWS開発環境向け Cognito セットアップ（User Pool/App Client, env wiring）
 9. Testing (unit, integration, E2E)
 10. Documentation updates
 
@@ -394,20 +394,19 @@ User                Frontend           Backend (NestJS)      AWS Cognito       E
 
 ## Risks and Mitigations
 
-### Risk 1: LocalStack Cognito Behavior Differences
+### Risk 1: 開発用AWS Cognito設定ミス
 
 **Impact**: High  
 **Likelihood**: Medium
 
-**Risk**: LocalStack's Cognito implementation may differ from real AWS Cognito, causing unexpected behavior in production.
+**Risk**: 開発用AWSアカウントのUser Pool/Client設定や権限不足により、サインアップ検証が失敗する可能性がある。
 
 **Mitigation**:
 
-- Document known differences in `quickstart.md`
-- Use real Cognito in staging environment before production
-- Test critical flows (signup, verify) against real Cognito early
-- Keep LocalStack updated to latest version
-- Add integration tests that can run against both LocalStack and real Cognito
+- `quickstart.md` に最小権限と必須設定を明記する
+- 初期セットアップ時に疎通確認（signup/verify）を必須化する
+- AWS認証情報（profile/role）とリージョン設定のチェック手順を追加する
+- 主要フローの統合テストを実AWS Cognito前提で維持する
 
 ---
 
@@ -502,7 +501,7 @@ User                Frontend           Backend (NestJS)      AWS Cognito       E
 
 ### External Services
 
-- ✅ AWS Cognito User Pool (or LocalStack for local dev)
+- ✅ AWS Cognito User Pool（開発用アカウント/環境）
 - ✅ Email service (Cognito default email, 50/day limit)
 - 🔲 AWS Lambda + API Gateway (deployment only, not needed for local dev)
 
@@ -560,7 +559,7 @@ User                Frontend           Backend (NestJS)      AWS Cognito       E
 ### Infrastructure
 
 - 🔲 Terraform modules (Cognito User Pool, Lambda, API Gateway) - Phase 4
-- ✅ LocalStack for local development
+- ✅ 開発用AWSアカウント（Cognito）
 - ✅ Podman Compose for container orchestration
 
 ---
@@ -579,7 +578,7 @@ User                Frontend           Backend (NestJS)      AWS Cognito       E
 
 1. Review all acceptance criteria in `spec.md`
 2. Verify all `[NEEDS CLARIFICATION]` items resolved
-3. Ensure development environment is ready (devcontainer, LocalStack)
+3. Ensure development environment is ready (devcontainer, AWS Cognito development account)
 4. Run through `quickstart.md` setup steps to validate
 5. Confirm test strategy and coverage targets
 

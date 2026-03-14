@@ -33,8 +33,8 @@ description: "メール検証機能付きユーザーサインアップの実装
 - [x] T002 [P] バックエンド依存関係をインストール (@aws-sdk/client-cognito-identity-provider, @nestjs/config, class-validator, class-transformer)
 - [x] T003 [P] フロントエンド依存関係をインストール (react-router-dom, axios, jotai)
 - [x] T004 [P] 必要な変数をすべて含む環境変数テンプレート backend/.env.example と frontend/.env.example を作成
-- [x] T005 [P] プロジェクトルートの compose.yaml に LocalStack compose 設定をセットアップ
-- [x] T006 backend/scripts/setup-local-cognito.sh に LocalStack Cognito セットアップスクリプトを作成
+- [ ] T005 [P] AWS開発環境向けに Cognito User Pool / App Client の作成手順を docs 化（backend/README.md と .env.example を更新）
+- [ ] T006 backend/scripts/setup-dev-cognito.sh に AWS CLI ベースの開発用 Cognito 初期化スクリプトを作成
 - [x] T007 [P] backend/tsconfig.json と frontend/tsconfig.json の両方で TypeScript strict mode を設定
 - [x] T008 [P] frontend/tailwind.config.js に Tailwind CSS 設定をセットアップ
 
@@ -338,7 +338,7 @@ Task T032: "frontend/src/components/auth/verification-success.tsx に Verificati
 - [ ] セキュリティ脆弱性がない（入力サニタイゼーション、認証情報漏洩なし）
 - [ ] バックエンドとフロントエンドの両方でlintとtype-checkがパスする
 - [ ] すべての環境変数が .env.example ファイルにドキュメント化されている
-- [ ] LocalStack Cognito セットアップスクリプトが正常に機能する
+- [ ] AWS開発環境向け Cognito 初期化手順/スクリプトが正常に機能する
 - [ ] コードが .github/copilot-instructions.md の規約に従っている
 
 ---
@@ -351,5 +351,5 @@ Task T032: "frontend/src/components/auth/verification-success.tsx に Verificati
 - **ファイルパス**: すべてのパスは正確でplan.mdで定義された構造と一致します
 - **段階的価値**: 各ユーザーストーリーは以前のストーリーを壊すことなく価値を追加します
 - **独立テスト**: 各ユーザーストーリーはspec.mdの受入基準に従って独立してテスト可能です
-- **コスト意識**: すべての決定はAWS無料枠を優先します（LocalStack、Cognito無料枠、Lambda最適化）
+- **コスト意識**: すべての決定はAWS無料枠を優先します（Cognito無料枠、Lambda最適化）
 - **セキュリティ**: plan.mdのセキュリティ基礎に従って、入力検証、パスワード非保存、Cognito管理認証
