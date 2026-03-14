@@ -1,6 +1,6 @@
 # CRUDアプリ バックエンド
 
-NestJsベースのバックエンド認証サーバー。AWS Cognito（またはLocalStack）と連携します。
+NestJsベースのバックエンド認証サーバー。AWS Cognitoと連携します。
 
 ## 技術スタック
 
@@ -8,7 +8,7 @@ NestJsベースのバックエンド認証サーバー。AWS Cognito（または
 - **Framework**: NestJS 10.4.0
 - **Language**: TypeScript 5.6.2
 - **Database**: SQLite with Prisma ORM
-- **Authentication**: AWS Cognito (LocalStack for local development)
+- **Authentication**: AWS Cognito (development account/environment)
 - **HTTP Client**: Axios
 
 ## セットアップ
@@ -34,7 +34,7 @@ cp .env.example .env
 | `AWS_REGION`           | AWS リージョン                                | `ap-northeast-1`              |
 | `COGNITO_USER_POOL_ID` | Cognito ユーザープール ID                     | `ap-northeast-1_xxxxx`        |
 | `COGNITO_CLIENT_ID`    | Cognito ネイティブクライアント ID             | `1a2b3c4d5e6f7g8h9i0j`        |
-| `LOCALSTACK_ENDPOINT`  | LocalStack エンドポイント（ローカル開発のみ） | `http://localhost:4566`       |
+| `COGNITO_ENDPOINT`     | 任意: Cognito互換エンドポイント上書き（通常は未設定） | `https://cognito-idp.ap-northeast-1.amazonaws.com` |
 | `DATABASE_URL`         | データベース URL                              | `file:./dev.db`               |
 | `PORT`                 | アプリケーションポート                        | `3000`                        |
 | `NODE_ENV`             | 実行環境                                      | `development` \| `production` |
@@ -43,9 +43,9 @@ cp .env.example .env
 
 ```env
 AWS_REGION=ap-northeast-1
-COGNITO_USER_POOL_ID=ap-northeast-1_LOCAL_POOL_ID
-COGNITO_CLIENT_ID=LOCAL_CLIENT_ID
-LOCALSTACK_ENDPOINT=http://localhost:4566
+COGNITO_USER_POOL_ID=ap-northeast-1_xxxxx
+COGNITO_CLIENT_ID=1a2b3c4d5e6f7g8h9i0j
+# COGNITO_ENDPOINT=
 DATABASE_URL=file:./dev.db
 PORT=3000
 NODE_ENV=development
@@ -270,32 +270,30 @@ npm run test:watch
 npm run build
 ```
 
-## ローカル環境での Cognito 設定（LocalStack）
+## 開発環境での Cognito 設定（AWS）
 
-LocalStack を使用した Cognito のセットアップ方法：
+開発用AWSアカウントの Cognito User Pool を利用します。
 
-### 1. Docker Compose でサービス起動
+### 1. AWS側の準備
 
-プロジェクトルートの `compose.yaml` で LocalStack を起動：
+- 開発用 User Pool を作成
+- サインアップで使う App Client を作成
+- User Pool ID と Client ID を控える
 
-```bash
-cd /workspaces/crud-app
-docker-compose up -d
+### 2. 環境変数の設定
+
+`.env` に以下を設定します。
+
+```env
+AWS_REGION=ap-northeast-1
+COGNITO_USER_POOL_ID=<your_user_pool_id>
+COGNITO_CLIENT_ID=<your_client_id>
+DATABASE_URL=file:./dev.db
+PORT=3000
+NODE_ENV=development
 ```
 
-### 2. Cognito ユーザープール作成スクリプト
-
-```bash
-bash backend/scripts/setup-local-cognito.sh
-```
-
-このスクリプトは以下を実行します：
-
-- ローカル Cognito ユーザープール作成
-- ユーザープール ID 取得
-- ネイティブクライアント作成
-- クライアント ID 取得
-- `.env` ファイルに自動設定（作成や更新）
+`COGNITO_ENDPOINT` は通常不要です（AWS標準エンドポイントを利用）。
 
 ## プロジェクト構造
 
@@ -347,23 +345,16 @@ kill -9 <PID>
 PORT=3001
 ```
 
-### LocalStack 接続エラー
+### Cognito 接続エラー
 
-LocalStack サービスが起動しているか確認：
+以下を確認してください：
 
-```bash
-docker-compose ps
-```
-
-起動していない場合：
-
-```bash
-docker-compose up -d
-```
+- `AWS_REGION` / `COGNITO_USER_POOL_ID` / `COGNITO_CLIENT_ID` が正しい
+- 実行中のAWS認証情報（プロファイル/環境変数）に対象User Poolへの権限がある
+- ネットワークから Cognito エンドポイントへ到達可能
 
 ## 参考資料
 
 - [NestJS 公式ドキュメント](https://docs.nestjs.com/)
 - [Prisma 公式ドキュメント](https://www.prisma.io/docs/)
 - [AWS Cognito ドキュメント](https://docs.aws.amazon.com/cognito/)
-- [LocalStack ドキュメント](https://docs.localstack.cloud/)

@@ -62,7 +62,7 @@
 
 ローカルでAWSリソースが使えない場合は以下を使う。
 
-- Cognito代替: LocalStack（またはローカル認証モック層）
+- Cognito: 開発時点からAWS Cognito（開発用アカウント/環境）を利用する
 - S3代替: MinIO
 - Lambda代替: NestJSのローカルサーバー実行
 - API Gateway代替: NestJSのローカルHTTPエンドポイント

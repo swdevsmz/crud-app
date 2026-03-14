@@ -11,5 +11,5 @@ export default registerAs('cognito', (): CognitoConfig => ({
   region: process.env.AWS_REGION ?? 'ap-northeast-1',
   userPoolId: process.env.COGNITO_USER_POOL_ID ?? '',
   clientId: process.env.COGNITO_CLIENT_ID ?? '',
-  endpoint: process.env.LOCALSTACK_ENDPOINT
+  endpoint: process.env.COGNITO_ENDPOINT ?? process.env.LOCALSTACK_ENDPOINT
 }));
