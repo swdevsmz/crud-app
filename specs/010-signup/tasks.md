@@ -73,21 +73,21 @@ description: "メール検証機能付きユーザーサインアップの実装
 
 #### バックエンド - データレイヤー
 
-- [ ] T021 [P] [US1] backend/src/auth/dto/signup.dto.ts に SignupDto 検証クラスを作成
-- [ ] T022 [P] [US1] backend/src/auth/dto/verify-email.dto.ts に VerifyEmailDto 検証クラスを作成
-- [ ] T023 [P] [US1] backend/src/auth/interfaces/auth-response.interface.ts にレスポンス型インターフェイスを作成
+- [x] T021 [P] [US1] backend/src/auth/dto/signup.dto.ts に SignupDto 検証クラスを作成
+- [x] T022 [P] [US1] backend/src/auth/dto/verify-email.dto.ts に VerifyEmailDto 検証クラスを作成
+- [x] T023 [P] [US1] backend/src/auth/interfaces/auth-response.interface.ts にレスポンス型インターフェイスを作成
 
 #### バックエンド - ビジネスロジック
 
-- [ ] T024 [US1] backend/src/auth/auth.service.ts の AuthService に signup メソッドを実装（CognitoService.signUp 呼び出し、エラーハンドリング）
-- [ ] T025 [US1] backend/src/auth/auth.service.ts の AuthService に verify-email メソッドを実装（ConfirmSignUp + InitiateAuth で自動ログイン）
-- [ ] T026 [US1] backend/src/auth/auth.service.ts のメール検証成功時に Prisma User レコード作成を追加
+- [x] T024 [US1] backend/src/auth/auth.service.ts の AuthService に signup メソッドを実装（CognitoService.signUp 呼び出し、エラーハンドリング）
+- [x] T025 [US1] backend/src/auth/auth.service.ts の AuthService に verify-email メソッドを実装（ConfirmSignUp + InitiateAuth で自動ログイン）
+- [x] T026 [US1] backend/src/auth/auth.service.ts のメール検証成功時に Prisma User レコード作成を追加
 
 #### バックエンド - APIエンドポイント
 
-- [ ] T027 [US1] backend/src/auth/auth.controller.ts に POST /auth/signup エンドポイントを実装
-- [ ] T028 [US1] backend/src/auth/auth.controller.ts に GET /auth/verify エンドポイントを実装
-- [ ] T029 [US1] contracts/signup-api.yaml に合わせて認証エンドポイントに Swagger/OpenAPI デコレータを追加
+- [x] T027 [US1] backend/src/auth/auth.controller.ts に POST /auth/signup エンドポイントを実装
+- [x] T028 [US1] backend/src/auth/auth.controller.ts に GET /auth/verify エンドポイントを実装
+- [x] T029 [US1] contracts/signup-api.yaml に合わせて認証エンドポイントに Swagger/OpenAPI デコレータを追加
 
 #### フロントエンド - コンポーネント
 
