@@ -2,9 +2,10 @@ import { Module, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { AuthModule } from './auth/auth.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
-  imports: [AuthModule]
+  imports: [AuthModule, HealthModule]
 })
 class AppModule { }
 

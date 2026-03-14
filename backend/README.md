@@ -238,8 +238,8 @@ npm run build
 
 ### ヘルスチェック
 
-```
-curl http://localhost:3000/auth/health
+```bash
+curl http://localhost:3000/health
 ```
 
 レスポンス例：

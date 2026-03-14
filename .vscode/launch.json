@@ -2,18 +2,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "NestJS Debug (Attach)",
-      "type": "node",
-      "request": "attach",
-      "port": 9229,
-      "restart": true,
-      "internalConsoleOptions": "openOnSessionStart",
-      "skipFiles": ["<node_internals>/**"],
-      "sourceMapPathOverride": {
-        "${workspaceFolder}/backend/dist/*": "${workspaceFolder}/backend/src/*"
-      }
-    },
-    {
       "name": "NestJS (Dev Mode)",
       "type": "node",
       "request": "launch",
@@ -26,23 +14,8 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "skipFiles": ["<node_internals>/**"],
-      "sourceMap": true
-    },
-    {
-      "name": "NestJS (Production Build)",
-      "type": "node",
-      "request": "launch",
-      "program": "${workspaceFolder}/backend/dist/main.js",
-      "cwd": "${workspaceFolder}/backend",
-      "env": {
-        "NODE_ENV": "production"
-      },
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "preLaunchTask": "npm: build (backend)",
-      "skipFiles": ["<node_internals>/**"],
-      "sourceMap": true
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/backend/dist/**/*.js"]
     }
-  ],
-  "compounds": []
+  ]
 }

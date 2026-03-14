@@ -19,11 +19,6 @@ import { type AuthResponse } from './interfaces/auth-response.interface';
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
-  @Get('health')
-  health(): { status: string } {
-    return { status: 'ok' };
-  }
-
   @Post('signup')
   @ApiOperation({ summary: 'Create a user signup request' })
   @ApiCreatedResponse({ description: 'Signup request accepted. Verification email sent.' })
