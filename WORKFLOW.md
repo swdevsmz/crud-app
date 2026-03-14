@@ -59,36 +59,35 @@
 
 ## Issue粒度の原則（Spec-First）
 
-**基本ルール**: `1 Issue = 1 spec.md = 1 PR`
+**基本ルール**: `1 Issue = N spec.md = N PR`
 
-- 1つのIssueは1つの `spec.md` にのみ紐付く
-- Issue本文には対象specパス（`specs/<id>/spec.md`）を1つだけ記載する
-- spec/plan/tasks の確認・更新・実装はすべて同じIssue内で行う
-- 最終的に1つのPRで完結させる
+- 1つのIssueを、機能単位で複数spec（`specs/<id>/spec.md`）に分割してよい
+- 1つのPRは、原則として1つのspecに対応させる
+- 各PR本文には対象specパスを明記する（複数specを混在させない）
+- 親Issueは全PRの進捗トラッキングに使い、最後のPRマージ時にクローズする
 
-**繰り返しパターン**:
+**繰り返しパターン（specごとに反復）**:
 
-1. Issue作成（対象spec: `specs/<id>/spec.md` を明記）
+1. 親Issue作成（目的と完了条件を定義）
 2. ブランチ作成（`feature/issue-<n>-<slug>`）
-3. `spec.md` を確認・更新（要件明確化、Clarification解消）
-4. `plan.md` を確認・更新（実装方針決定）
-5. `tasks.md` を確認・更新（具体的タスクリスト作成）
-6. `tasks.md` に沿って実装（実装中に spec/plan/tasks の更新可能）
-7. すべての変更を含む1PRを作成（`Closes #<n>`）
-8. CI・レビュー・マージ
-9. Issue自動クローズ
+3. 対象specを作成・更新（要件明確化、Clarification解消）
+4. 対象specの `plan.md` / `tasks.md` を更新
+5. 対象specに対応する実装を行う
+6. 1spec = 1PR でPR作成（必要に応じて `Part of #<n>` を使用）
+7. CI・レビュー・マージ
+8. すべての関連PRが完了したら親Issueをクローズ
 
 **新しいIssueを作るタイミング**:
 
 - 別の機能を作るとき
-- 別の `spec.md` が必要なとき
-- 例: Issue #7 `specs/000-devcontainer/` → Issue #8 `specs/001-signup/`
+- 親Issueごと分離したい責務（担当・期限・リリース）があるとき
+- 同一Issue内のspec分割で管理できる場合はIssueを増やさない
 
 **大きすぎる場合の対処**:
 
-- タスク単位でIssue分割はしない
-- 最初から機能を分割して別Issue（別spec）を新規作成する
-- 途中で親子Issue化しない（運用簡素化のため）
+- まずspecを分割してPRを小さくする（1spec = 1PR）
+- それでも管理不能な場合のみIssueを分割する
+- 分割後も親Issueと各spec/PRの対応を明記し、追跡可能性を維持する
 
 ## Issue粒度の目安
 
