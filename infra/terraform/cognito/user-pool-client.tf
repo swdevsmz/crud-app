@@ -8,6 +8,7 @@ resource "aws_cognito_user_pool_client" "native" {
 
   explicit_auth_flows = [
     # ユーザーの通常ログインとリフレッシュトークン更新を許可
+    "ALLOW_USER_PASSWORD_AUTH",
     "ALLOW_USER_SRP_AUTH",
     "ALLOW_REFRESH_TOKEN_AUTH"
   ]
