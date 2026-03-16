@@ -25,8 +25,8 @@ resource "aws_cognito_user_pool" "this" {
   }
 
   verification_message_template {
-    # メール検証はコードではなくリンク方式を使う
-    default_email_option = "CONFIRM_WITH_LINK"
+    # 学習用の最小構成として、ドメイン不要のコード方式を使う
+    default_email_option = "CONFIRM_WITH_CODE"
   }
 
   admin_create_user_config {
