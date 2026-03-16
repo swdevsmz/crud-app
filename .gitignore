@@ -28,3 +28,10 @@ yarn-error.log*
 # Build outputs
 dist/
 build/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+terraform.tfvars
