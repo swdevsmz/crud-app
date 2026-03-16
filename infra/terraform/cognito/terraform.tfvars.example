@@ -1,0 +1,16 @@
+# 作成先リージョン
+aws_region   = "ap-northeast-1"
+# リソース命名に使うプロジェクト名
+project_name = "crud-app"
+# 環境名（dev/stg/prod）
+environment  = "dev"
+
+# サインアップ検証後の戻り先URL
+callback_urls = [
+  "http://localhost:3000/verify-email"
+]
+
+# ログアウト後の遷移先URL
+logout_urls = [
+  "http://localhost:3000"
+]
