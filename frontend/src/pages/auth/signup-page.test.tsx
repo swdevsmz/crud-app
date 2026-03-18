@@ -33,6 +33,7 @@ describe('SignupPage', () => {
 
     await user.type(screen.getByLabelText('Email'), 'user@example.com');
     await user.type(screen.getByLabelText('Password'), 'Password1!');
+    await user.type(screen.getByLabelText('Confirm password'), 'Password1!');
     await user.click(screen.getByRole('button', { name: 'Sign up' }));
 
     await waitFor(() => {
