@@ -1,8 +1,8 @@
 import { Module, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
-import { AuthModule } from './auth/auth.module';
-import { HealthModule } from './health/health.module';
+import { HealthModule } from './features/internal/app/health/health.module';
+import { AuthModule } from './features/internal/auth/auth.module';
 
 @Module({
   imports: [AuthModule, HealthModule]
