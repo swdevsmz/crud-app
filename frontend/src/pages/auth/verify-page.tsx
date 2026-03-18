@@ -2,18 +2,25 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { type VerifyEmailRequest } from '../../features/auth/api/auth';
-import { useVerifyEmailMutation } from '../../features/auth/api/hooks';
+import { PasswordInput } from '../../features/auth/components/password-input';
+import { VerificationSuccess } from '../../features/auth/components/verification-success';
+import { useSignup } from '../../features/auth/hooks/use-signup';
+import { type VerifyEmailRequest } from '../../features/auth/types/auth.types';
 import { isValidEmail, isStrongPassword } from '../../shared/lib/validation';
+import { FormField } from '../../shared/ui/form-field';
 
 export default function VerifyPage(): JSX.Element {
   const navigate = useNavigate();
-  const { search } = useLocation();
+  const { search, state } = useLocation();
   const emailFromQuery = new URLSearchParams(search).get('email') ?? '';
+  const signupSuccessMessage =
+    typeof state === 'object' && state && 'signupSuccessMessage' in state
+      ? String((state as { signupSuccessMessage?: string }).signupSuccessMessage ?? '')
+      : '';
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const verifyEmailMutation = useVerifyEmailMutation();
+  const { verifyEmailMutation } = useSignup();
 
   const {
     register,
@@ -36,6 +43,12 @@ export default function VerifyPage(): JSX.Element {
     }
   }, [emailFromQuery, setValue]);
 
+  useEffect(() => {
+    if (signupSuccessMessage) {
+      setSuccess(signupSuccessMessage);
+    }
+  }, [signupSuccessMessage]);
+
   const canSubmit = isValid && !isSubmitting;
   const emailValue = watch('email');
 
@@ -46,7 +59,6 @@ export default function VerifyPage(): JSX.Element {
     try {
       await verifyEmailMutation.mutateAsync(payload);
       setSuccess('Email verified successfully! You are now signed in.');
-      // Optionally, store tokens or navigate to dashboard.
       setTimeout(() => {
         navigate('/dashboard');
       }, 800);
@@ -66,59 +78,48 @@ export default function VerifyPage(): JSX.Element {
         ) : null}
 
         {success ? (
-          <div className="text-sm text-green-700 bg-green-100 p-3 rounded mb-4">{success}</div>
+          <VerificationSuccess message={success} />
         ) : null}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <label className="block">
-            <span className="text-sm font-medium text-slate-700">Email</span>
+          <FormField id="email" label="Email" error={errors.email?.message}>
             <input
+              id="email"
               type="email"
               {...register('email', {
                 required: 'Please enter a valid email address.',
                 validate: (value) => isValidEmail(value) || 'Please enter a valid email address.'
               })}
-              className="mt-1 block w-full rounded border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
-            {errors.email ? (
-              <p className="mt-1 text-sm text-red-700">{errors.email.message}</p>
-            ) : null}
-          </label>
+          </FormField>
 
-          <label className="block">
-            <span className="text-sm font-medium text-slate-700">Verification code</span>
+          <FormField id="code" label="Verification code" error={errors.code?.message}>
             <input
+              id="code"
               type="text"
               {...register('code', {
                 required: 'Please enter the verification code.',
                 validate: (value) => value.trim().length > 0 || 'Please enter the verification code.'
               })}
-              className="mt-1 block w-full rounded border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
-            {errors.code ? (
-              <p className="mt-1 text-sm text-red-700">{errors.code.message}</p>
-            ) : null}
-          </label>
+          </FormField>
 
-          <label className="block">
-            <span className="text-sm font-medium text-slate-700">Password</span>
-            <input
-              type="password"
-              {...register('password', {
-                required: 'Password must be at least 8 characters and include upper/lower, number, and symbol.',
-                validate: (value) =>
-                  isStrongPassword(value) ||
-                  'Password must be at least 8 characters and include upper/lower, number, and symbol.'
-              })}
-              className="mt-1 block w-full rounded border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            {errors.password ? (
-              <p className="mt-1 text-sm text-red-700">{errors.password.message}</p>
-            ) : null}
-          </label>
+          <PasswordInput
+            id="password"
+            label="Password"
+            autoComplete="current-password"
+            error={errors.password?.message}
+            register={register('password', {
+              required: 'Password must be at least 8 characters and include upper/lower, number, and symbol.',
+              validate: (value) =>
+                isStrongPassword(value) ||
+                'Password must be at least 8 characters and include upper/lower, number, and symbol.'
+            })}
+          />
 
           <button
             type="submit"
