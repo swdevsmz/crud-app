@@ -2,7 +2,8 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
-  InternalServerErrorException
+  InternalServerErrorException,
+  Logger
 } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
@@ -13,10 +14,12 @@ import { type AuthResponse, type AuthTokens } from './interfaces/auth-response.i
 
 @Injectable()
 export class AuthService {
-
+  private readonly logger = new Logger(AuthService.name);
   private readonly prisma = new PrismaClient();
 
-  constructor(private readonly cognitoService: CognitoService) { }
+  constructor(private readonly cognitoService: CognitoService) {
+    this.logger.log('AuthService initialized');
+  }
 
   /**
    *  ユーザー登録処理。Cognitoにサインアップリクエストを送信し、成功した場合は検証メールが送信されたことを示すレスポンスを返す。
@@ -24,13 +27,16 @@ export class AuthService {
    * @returns  ユーザー登録の結果を示すAuthResponseオブジェクト。
    */
   async signup(payload: SignupDto): Promise<AuthResponse> {
+    this.logger.log(`Signup requested for email=${ payload.email }`);
     try {
       await this.cognitoService.signUp(payload.email, payload.password);
+      this.logger.log(`Cognito signup success for email=${ payload.email }`);
       return {
         message: 'Signup successful. Please check your email for verification.',
         requiresVerification: true
       };
     } catch (error: unknown) {
+      this.logger.error(`Cognito signup error for email=${ payload.email }`, error as Error);
       throw this.mapCognitoError(error);
     }
   }
@@ -41,9 +47,11 @@ export class AuthService {
    * @returns  メールアドレス確認の結果を示すAuthResponseオブジェクト。
    */
   async verifyEmail(payload: VerifyEmailDto): Promise<AuthResponse> {
+    this.logger.log(`VerifyEmail requested for email=${ payload.email }`);
     try {
 
       await this.cognitoService.confirmSignUp(payload.email, payload.code);
+      this.logger.log(`Cognito confirmSignUp success for email=${ payload.email }`);
 
       const authResult = await this.cognitoService.initiateAuth(payload.email, payload.password);
       const tokens = this.toAuthTokens(authResult.AuthenticationResult);

@@ -11,9 +11,15 @@ interface UseSignupResult {
     verifyEmailMutation: UseMutationResult<AuthResponse, Error, VerifyEmailRequest>;
 }
 
+/**
+ * カスタムフック: サインアップおよびメール検証の処理を提供
+ * 
+ * @returns 
+ */
 export function useSignup(): UseSignupResult {
     const setAuthState = useSetAtom(authStateAtom);
 
+    // サインアップ要求のみを扱う mutation
     const signupMutation = useMutation<AuthResponse, Error, SignupRequest>({
         mutationFn: async (payload) => {
             try {
@@ -24,6 +30,7 @@ export function useSignup(): UseSignupResult {
         }
     });
 
+    // メール検証成功時にトークンを保存し、ログイン済み状態へ更新する mutation
     const verifyEmailMutation = useMutation<AuthResponse, Error, VerifyEmailRequest>({
         mutationFn: async (payload) => {
             try {
@@ -33,6 +40,7 @@ export function useSignup(): UseSignupResult {
             }
         },
         onSuccess: (response) => {
+            // トークン未返却時は状態更新しない
             if (!response.tokens) {
                 return;
             }

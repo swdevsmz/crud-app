@@ -8,11 +8,12 @@ import {
   SignUpCommand,
   type SignUpCommandOutput
 } from '@aws-sdk/client-cognito-identity-provider';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CognitoService {
+  private readonly logger = new Logger(CognitoService.name);
   private readonly client: CognitoIdentityProviderClient;
   private readonly clientId: string;
 
@@ -31,7 +32,8 @@ export class CognitoService {
    * @returns Cognitoのサインアップコマンドの出力
    */
   async signUp(email: string, password: string): Promise<SignUpCommandOutput> {
-    return this.client.send(
+    this.logger.log(`CognitoService.signUp email=${ email }`);
+    const result = await this.client.send(
       new SignUpCommand({
         ClientId: this.clientId,
         Username: email,
@@ -39,6 +41,8 @@ export class CognitoService {
         UserAttributes: [{ Name: 'email', Value: email }]
       })
     );
+    this.logger.log(`Cognito signin request completed for email=${ email }`);
+    return result;
   }
 
   /**
@@ -48,13 +52,16 @@ export class CognitoService {
    * @returns Cognitoの確認サインアップコマンドの出力
    */
   async confirmSignUp(email: string, code: string): Promise<ConfirmSignUpCommandOutput> {
-    return this.client.send(
+    this.logger.log(`CognitoService.confirmSignUp email=${ email } code=${ code }`);
+    const result = await this.client.send(
       new ConfirmSignUpCommand({
         ClientId: this.clientId,
         Username: email,
         ConfirmationCode: code
       })
     );
+    this.logger.log(`Cognito confirmSignUp completed for email=${ email }`);
+    return result;
   }
 
   /**
@@ -64,7 +71,8 @@ export class CognitoService {
    * @returns Cognitoの認証コマンドの出力
    */
   async initiateAuth(email: string, password: string): Promise<InitiateAuthCommandOutput> {
-    return this.client.send(
+    this.logger.log(`CognitoService.initiateAuth email=${ email }`);
+    const result = await this.client.send(
       new InitiateAuthCommand({
         ClientId: this.clientId,
         AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
@@ -74,5 +82,7 @@ export class CognitoService {
         }
       })
     );
+    this.logger.log(`Cognito initiateAuth completed for email=${ email }`);
+    return result;
   }
 }

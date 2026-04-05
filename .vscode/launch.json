@@ -1,21 +1,42 @@
 {
   "version": "0.2.0",
   "configurations": [
+    // Backendの起動とデバッグ。デバッグ停止でNodeプロセスも停止する。
     {
-      "name": "NestJS (Dev Mode)",
+      "name": "Backend: Debug",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start:dev"],
+      "preLaunchTask": "npm: build (backend)",
+      "runtimeExecutable": "node",
+      "program": "${workspaceFolder}/backend/dist/main.js",
       "cwd": "${workspaceFolder}/backend",
       "env": {
         "NODE_ENV": "development"
       },
+      "restart": true,
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/backend/dist/**/*.js"],
+      "skipFiles": ["<node_internals>/**"],
+      "console": "internalConsole",
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    // FrontendはViteを起動し、起動完了後にChromeデバッグを自動で開く。
+    {
+      "name": "Frontend: ViteDev + Chrome",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--host", "127.0.0.1", "--port", "5173"],
+      "cwd": "${workspaceFolder}/frontend",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "skipFiles": ["<node_internals>/**"],
-      "sourceMaps": true,
-      "outFiles": ["${workspaceFolder}/backend/dist/**/*.js"]
+      "serverReadyAction": {
+        "pattern": "Local:\\s+(https?://\\S+)",
+        "uriFormat": "%s",
+        "action": "debugWithChrome",
+        "webRoot": "${workspaceFolder}/frontend"
+      },
+      "skipFiles": ["<node_internals>/**"]
     }
   ]
 }
