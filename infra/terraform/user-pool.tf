@@ -2,8 +2,20 @@ resource "aws_cognito_user_pool" "this" {
   # サインアップで利用するCognitoユーザープール
   name = "${var.project_name}-${var.environment}-user-pool"
 
-  # 学習フェーズではMFAを無効化
-  mfa_configuration = "OFF"
+  # 2FAを実装：メール OTP を使用
+  mfa_configuration = "OPTIONAL"
+
+  email_configuration {
+    email_sending_account = "COGNITO_DEFAULT"
+  }
+
+  software_token_mfa_configuration {
+    enabled = false
+  }
+
+  user_attribute_update_settings {
+    attributes_require_verification_before_update = ["email"]
+  }
 
   # メールアドレスを自動検証対象にする
   auto_verified_attributes = ["email"]

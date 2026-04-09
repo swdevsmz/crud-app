@@ -3,8 +3,13 @@ import {
   ConfirmSignUpCommand,
   type ConfirmSignUpCommandOutput,
   CognitoIdentityProviderClient,
+  GetUserCommand,
+  type GetUserCommandOutput,
   InitiateAuthCommand,
   type InitiateAuthCommandOutput,
+  RespondToAuthChallengeCommand,
+  type RespondToAuthChallengeCommandOutput,
+  SetUserMFAPreferenceCommand,
   SignUpCommand,
   type SignUpCommandOutput
 } from '@aws-sdk/client-cognito-identity-provider';
@@ -83,6 +88,68 @@ export class CognitoService {
       })
     );
     this.logger.log(`Cognito initiateAuth completed for email=${ email }`);
+    return result;
+  }
+
+  /**
+   * MFA チャレンジに応答。ユーザーが入力した OTP コードを Cognito に送信する。
+   * @param email ユーザーのメールアドレス
+   * @param session Cognito が返した session トークン
+   * @param code ユーザーが入力した OTP コード
+   * @returns Cognito の チャレンジ応答コマンドの出力
+   */
+  async respondToMfaChallenge(
+    email: string,
+    session: string,
+    code: string
+  ): Promise<RespondToAuthChallengeCommandOutput> {
+    this.logger.log(`CognitoService.respondToMfaChallenge email=${ email }`);
+    const result = await this.client.send(
+      new RespondToAuthChallengeCommand({
+        ClientId: this.clientId,
+        ChallengeName: 'EMAIL_OTP',
+        Session: session,
+        ChallengeResponses: {
+          USERNAME: email,
+          EMAIL_OTP_CODE: code
+        }
+      })
+    );
+    this.logger.log(`Cognito respondToMfaChallenge completed for email=${ email }`);
+    return result;
+  }
+
+  /**
+   * ユーザーの MFA 設定を取得。メール OTP が有効かどうかを確認する。
+   * @param accessToken アクセストークン
+   * @returns ユーザーの MFA 設定情報
+   */
+  async getUserMfaConfig(accessToken: string): Promise<GetUserCommandOutput> {
+    this.logger.log('CognitoService.getUserMfaConfig');
+    const result = await this.client.send(
+      new GetUserCommand({
+        AccessToken: accessToken
+      })
+    );
+    return result;
+  }
+
+  /**
+   * ユーザーの MFA 設定を更新。メール OTP を有効にする。
+   * @param accessToken アクセストークン
+   * @returns Cognito の MFA 設定更新コマンドの出力
+   */
+  async setEmailMfaPreference(accessToken: string) {
+    this.logger.log('CognitoService.setEmailMfaPreference');
+    const result = await this.client.send(
+      new SetUserMFAPreferenceCommand({
+        AccessToken: accessToken,
+        EmailMfaSettings: {
+          Enabled: true,
+          PreferredMfa: true
+        }
+      })
+    );
     return result;
   }
 }

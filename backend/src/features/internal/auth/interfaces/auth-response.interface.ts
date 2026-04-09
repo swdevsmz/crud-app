@@ -9,6 +9,14 @@ export interface AuthTokens {
 }
 
 /**
+ * MFA チャレンジの情報。Cognito がユーザーに対して MFA を要求した場合に返される。
+ */
+export interface MfaChallenge {
+    session: string;
+    challengeName: string;
+}
+
+/**
  * 認証関連のレスポンスインターフェース。メッセージ、検証の必要性、トークンなどを含む。
  */
 export interface AuthResponse {
@@ -16,4 +24,7 @@ export interface AuthResponse {
     requiresVerification?: boolean;
     verified?: boolean;
     tokens?: AuthTokens;
+    requiresMfaSetup?: boolean;
+    mfaChallenge?: MfaChallenge;
+    recoveryCodes?: string[];
 }
