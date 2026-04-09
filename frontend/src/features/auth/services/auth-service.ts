@@ -1,7 +1,12 @@
 import { apiClient } from '../../../shared/api/api-client';
-import { type AuthResponse, type SignupRequest, type VerifyEmailRequest } from '../types/auth.types';
+import { type AuthResponse, type MfaSetupRequest, type MfaVerifyRequest, type SigninRequest, type SignupRequest, type VerifyEmailRequest } from '../types/auth.types';
 
 export const authService = {
+    async signin(payload: SigninRequest): Promise<AuthResponse> {
+        const response = await apiClient.post<AuthResponse>('/auth/signin', payload);
+        return response.data;
+    },
+
     async signup(payload: SignupRequest): Promise<AuthResponse> {
         // サインアップAPI: 仮登録を作成し、検証コード送信をトリガー
         const response = await apiClient.post<AuthResponse>('/auth/signup', payload);
@@ -17,6 +22,18 @@ export const authService = {
         });
 
         const response = await apiClient.get<AuthResponse>(`/auth/verify?${ params.toString() }`);
+        return response.data;
+    },
+
+    async verifyMfaChallenge(payload: MfaVerifyRequest): Promise<AuthResponse> {
+        // MFA チャレンジ応答API
+        const response = await apiClient.post<AuthResponse>('/auth/mfa/verify', payload);
+        return response.data;
+    },
+
+    async setupMfa(payload: MfaSetupRequest): Promise<AuthResponse> {
+        // MFA セットアップAPI
+        const response = await apiClient.post<AuthResponse>('/auth/mfa/setup', payload);
         return response.data;
     }
 };

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAtomValue } from 'jotai';
 
 import { PasswordInput } from '../../features/auth/components/password-input';
 import { VerificationSuccess } from '../../features/auth/components/verification-success';
 import { useSignup } from '../../features/auth/hooks/use-signup';
+import { authStateAtom } from '../../features/auth/model/auth-store';
 import { type VerifyEmailRequest } from '../../features/auth/types/auth.types';
 import { isValidEmail, isStrongPassword } from '../../shared/lib/validation';
 import { FormField } from '../../shared/ui/form-field';
@@ -12,6 +14,7 @@ import { FormField } from '../../shared/ui/form-field';
 export default function VerifyPage(): JSX.Element {
   const navigate = useNavigate();
   const { search, state } = useLocation();
+  const authState = useAtomValue(authStateAtom);
   const emailFromQuery = new URLSearchParams(search).get('email') ?? '';
   const signupSuccessMessage =
     typeof state === 'object' && state && 'signupSuccessMessage' in state
@@ -20,6 +23,7 @@ export default function VerifyPage(): JSX.Element {
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [verifyEmail, setVerifyEmail] = useState<string>('');
   const { verifyEmailMutation } = useSignup();
 
   const {
@@ -49,19 +53,30 @@ export default function VerifyPage(): JSX.Element {
     }
   }, [signupSuccessMessage]);
 
+  // MFA チャレンジが返された場合
+  useEffect(() => {
+    if (authState.pendingMfaChallenge && verifyEmail) {
+      navigate('/mfa-setup');
+    }
+  }, [authState.pendingMfaChallenge, verifyEmail, navigate]);
+
   const canSubmit = isValid && !isSubmitting;
   const emailValue = watch('email');
 
   const onSubmit = async (payload: VerifyEmailRequest): Promise<void> => {
     setError(null);
     setSuccess(null);
+    setVerifyEmail(payload.email);
 
     try {
       await verifyEmailMutation.mutateAsync(payload);
-      setSuccess('Email verified successfully! You are now signed in.');
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 800);
+      // MFA チャレンジが返された場合は useEffect で遷移
+      if (!authState.pendingMfaChallenge) {
+        setSuccess('Email verified successfully! You are now signed in.');
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 800);
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Verification failed';
       setError(message);

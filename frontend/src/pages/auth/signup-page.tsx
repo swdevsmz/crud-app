@@ -69,6 +69,16 @@ export default function SignupPage(): JSX.Element {
         />
 
         <div className="mt-4 text-sm text-slate-600">Already have a code? Verify your email from the link in your inbox.</div>
+        <div className="mt-2 text-sm text-slate-600">
+          <span>Already have an account? </span>
+          <button
+            type="button"
+            onClick={() => navigate('/signin')}
+            className="ml-1 text-blue-600 hover:underline"
+          >
+            Sign in
+          </button>
+        </div>
       </div>
     </main>
   );

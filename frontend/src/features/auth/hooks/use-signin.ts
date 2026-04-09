@@ -4,39 +4,25 @@ import { useSetAtom } from 'jotai';
 import { getApiErrorMessage } from '../../../shared/lib/api-error';
 import { authStateAtom } from '../model/auth-store';
 import { authService } from '../services/auth-service';
-import { type AuthResponse, type SignupRequest, type VerifyEmailRequest } from '../types/auth.types';
+import { type AuthResponse, type SigninRequest } from '../types/auth.types';
 
-interface UseSignupResult {
-    signupMutation: UseMutationResult<AuthResponse, Error, SignupRequest>;
-    verifyEmailMutation: UseMutationResult<AuthResponse, Error, VerifyEmailRequest>;
+interface UseSigninResult {
+    signinMutation: UseMutationResult<AuthResponse, Error, SigninRequest>;
 }
 
 /**
- * カスタムフック: サインアップおよびメール検証の処理を提供
- * 
- * @returns 
+ * カスタムフック: サインイン処理を提供
+ * @returns サインインmutation
  */
-export function useSignup(): UseSignupResult {
+export function useSignin(): UseSigninResult {
     const setAuthState = useSetAtom(authStateAtom);
 
-    // サインアップ要求のみを扱う mutation
-    const signupMutation = useMutation<AuthResponse, Error, SignupRequest>({
+    const signinMutation = useMutation<AuthResponse, Error, SigninRequest>({
         mutationFn: async (payload) => {
             try {
-                return await authService.signup(payload);
+                return await authService.signin(payload);
             } catch (error: unknown) {
-                throw new Error(getApiErrorMessage(error, 'Signup failed'));
-            }
-        }
-    });
-
-    // メール検証成功時にトークンを保存し、ログイン済み状態へ更新する mutation
-    const verifyEmailMutation = useMutation<AuthResponse, Error, VerifyEmailRequest>({
-        mutationFn: async (payload) => {
-            try {
-                return await authService.verifyEmail(payload);
-            } catch (error: unknown) {
-                throw new Error(getApiErrorMessage(error, 'Verification failed'));
+                throw new Error(getApiErrorMessage(error, 'Signin failed'));
             }
         },
         onSuccess: (response) => {
@@ -56,7 +42,19 @@ export function useSignup(): UseSignupResult {
                 return;
             }
 
-            // トークン未返却時は状態更新しない
+            // MFA セットアップが必要な場合（トークンはあるが、MFA未設定）
+            if (response.requiresMfaSetup && response.tokens) {
+                setAuthState({
+                    accessToken: response.tokens.accessToken,
+                    idToken: response.tokens.idToken,
+                    isAuthenticated: true,
+                    pendingMfaChallenge: null,
+                    requiresMfaSetup: true
+                });
+                return;
+            }
+
+            // 通常のサインイン成功
             if (!response.tokens) {
                 return;
             }
@@ -72,7 +70,6 @@ export function useSignup(): UseSignupResult {
     });
 
     return {
-        signupMutation,
-        verifyEmailMutation
+        signinMutation
     };
 }
