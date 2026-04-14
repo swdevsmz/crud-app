@@ -42,7 +42,7 @@ export default function SignupPage(): JSX.Element {
       
     } catch (err: unknown) {
       // APIエラーはユーザー表示用メッセージへ変換して保持する
-      const message = err instanceof Error ? err.message : 'Signup failed';
+      const message = err instanceof Error ? err.message : '登録に失敗しました。';
       setError(message);
     }
   };
@@ -68,7 +68,16 @@ export default function SignupPage(): JSX.Element {
           errorMessage={error}
         />
 
-        <div className="mt-4 text-sm text-slate-600">Already have a code? Verify your email from the link in your inbox.</div>
+        <div className="mt-4 text-sm text-slate-600">
+          Already have an account?{' '}
+          <button
+            type="button"
+            onClick={() => navigate('/signin')}
+            className="text-blue-600 hover:underline"
+          >
+            Sign in
+          </button>
+        </div>
       </div>
     </main>
   );

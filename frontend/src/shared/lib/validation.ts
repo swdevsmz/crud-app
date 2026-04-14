@@ -15,3 +15,7 @@ export function isStrongPassword(value: string): boolean {
 export function hasMatchingPassword(password: string, confirmPassword: string): boolean {
   return password === confirmPassword;
 }
+
+export function isValidPhoneNumber(value: string): boolean {
+  return /^\+[1-9]\d{1,14}$/.test(value);
+}

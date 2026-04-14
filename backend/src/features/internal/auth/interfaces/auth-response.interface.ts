@@ -16,4 +16,10 @@ export interface AuthResponse {
     requiresVerification?: boolean;
     verified?: boolean;
     tokens?: AuthTokens;
+    /** MFA（メールOTP）チャレンジが必要な場合はtrue */
+    mfaRequired?: boolean;
+    /** MFAチャレンジ継続用のセッショントークン */
+    session?: string;
+    /** MFAコード送信先のメールアドレス */
+    email?: string;
 }

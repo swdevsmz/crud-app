@@ -1,10 +1,14 @@
 import {
   AuthFlowType,
+  ChallengeNameType,
   ConfirmSignUpCommand,
   type ConfirmSignUpCommandOutput,
   CognitoIdentityProviderClient,
+  GlobalSignOutCommand,
   InitiateAuthCommand,
   type InitiateAuthCommandOutput,
+  RespondToAuthChallengeCommand,
+  type RespondToAuthChallengeCommandOutput,
   SignUpCommand,
   type SignUpCommandOutput
 } from '@aws-sdk/client-cognito-identity-provider';
@@ -29,16 +33,20 @@ export class CognitoService {
    * ユーザー登録処理。Cognitoにサインアップリクエストを送信する。
    * @param email ユーザーのメールアドレス
    * @param password ユーザーのパスワード
+   * @param phoneNumber アカウント復旧用の電話番号（E.164形式）
    * @returns Cognitoのサインアップコマンドの出力
    */
-  async signUp(email: string, password: string): Promise<SignUpCommandOutput> {
+  async signUp(email: string, password: string, phoneNumber: string): Promise<SignUpCommandOutput> {
     this.logger.log(`CognitoService.signUp email=${ email }`);
     const result = await this.client.send(
       new SignUpCommand({
         ClientId: this.clientId,
         Username: email,
         Password: password,
-        UserAttributes: [{ Name: 'email', Value: email }]
+        UserAttributes: [
+          { Name: 'email', Value: email },
+          { Name: 'phone_number', Value: phoneNumber }
+        ]
       })
     );
     this.logger.log(`Cognito signin request completed for email=${ email }`);
@@ -83,6 +91,64 @@ export class CognitoService {
       })
     );
     this.logger.log(`Cognito initiateAuth completed for email=${ email }`);
+    return result;
+  }
+
+  /**
+   * グローバルサインアウト処理。すべてのデバイスのトークンを無効化する。
+   * @param accessToken 有効なアクセストークン
+   */
+  async globalSignOut(accessToken: string): Promise<void> {
+    this.logger.log('CognitoService.globalSignOut');
+    await this.client.send(new GlobalSignOutCommand({ AccessToken: accessToken }));
+    this.logger.log('Cognito globalSignOut completed');
+  }
+
+  /**
+   * リフレッシュトークンを使用して新しいアクセストークンとIDトークンを取得する。
+   * @param refreshToken リフレッシュトークン
+   * @returns Cognitoの認証コマンドの出力（AccessToken, IdToken, ExpiresIn）
+   */
+  async refreshToken(refreshToken: string): Promise<InitiateAuthCommandOutput> {
+    this.logger.log('CognitoService.refreshToken');
+    const result = await this.client.send(
+      new InitiateAuthCommand({
+        ClientId: this.clientId,
+        AuthFlow: AuthFlowType.REFRESH_TOKEN_AUTH,
+        AuthParameters: {
+          REFRESH_TOKEN: refreshToken
+        }
+      })
+    );
+    this.logger.log('Cognito refreshToken completed');
+    return result;
+  }
+
+  /**
+   * メールOTPチャレンジへの応答処理。MFAコードを送信してトークンを取得する。
+   * @param email ユーザーのメールアドレス
+   * @param session CognitoチャレンジセッショントークN
+   * @param code メールで受信したOTPコード
+   * @returns Cognitoのチャレンジ応答コマンドの出力
+   */
+  async respondToEmailOtp(
+    email: string,
+    session: string,
+    code: string
+  ): Promise<RespondToAuthChallengeCommandOutput> {
+    this.logger.log(`CognitoService.respondToEmailOtp email=${ email }`);
+    const result = await this.client.send(
+      new RespondToAuthChallengeCommand({
+        ClientId: this.clientId,
+        ChallengeName: ChallengeNameType.EMAIL_OTP,
+        Session: session,
+        ChallengeResponses: {
+          EMAIL_OTP_CODE: code,
+          USERNAME: email
+        }
+      })
+    );
+    this.logger.log(`Cognito respondToEmailOtp completed for email=${ email }`);
     return result;
   }
 }

@@ -6,6 +6,7 @@
 
 - Cognito User Pool
 - Cognito User Pool App Client
+- Cognito の Email MFA / SMS recovery 用設定
 
 ## 前提条件
 
@@ -16,7 +17,7 @@
 ## 使い方
 
 ```bash
-cd infra/terraform/cognito
+cd infra/terraform
 cp terraform.tfvars.example terraform.tfvars
 terraform init
 terraform plan -out tfplan
@@ -43,5 +44,7 @@ terraform destroy
 
 ## 注意
 
-- 学習用の最小構成です。
-- 本番運用ではMFA、詳細なパスワードポリシー、メール送信設定、WAF等を追加してください。
+- Email MFA を有効にするため、User Pool は `ESSENTIALS` tier を使います。
+- Email MFA には SES を使った独自メール送信設定が必要です。`terraform.tfvars` の `ses_source_arn` などを実環境値へ置き換えてください。
+- 現在の AWS アカウント `321058214401` の `ap-northeast-1` では SES identity が未作成で、SES は sandbox 状態です。送信元 identity の検証が先に必要です。
+- フロントの現在の確認画面ルートに合わせて、callback URL の例は `http://localhost:3000/verify` にしています。

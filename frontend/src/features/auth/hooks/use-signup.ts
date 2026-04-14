@@ -25,22 +25,23 @@ export function useSignup(): UseSignupResult {
             try {
                 return await authService.signup(payload);
             } catch (error: unknown) {
-                throw new Error(getApiErrorMessage(error, 'Signup failed'));
+                throw new Error(getApiErrorMessage(error, '登録に失敗しました。'));
             }
         }
     });
 
     // メール検証成功時にトークンを保存し、ログイン済み状態へ更新する mutation
+    // MFAが有効な場合はトークンは返却されず、MFAチャレンジ情報が返る
     const verifyEmailMutation = useMutation<AuthResponse, Error, VerifyEmailRequest>({
         mutationFn: async (payload) => {
             try {
                 return await authService.verifyEmail(payload);
             } catch (error: unknown) {
-                throw new Error(getApiErrorMessage(error, 'Verification failed'));
+                throw new Error(getApiErrorMessage(error, 'メール確認に失敗しました。'));
             }
         },
         onSuccess: (response) => {
-            // トークン未返却時は状態更新しない
+            // MFA必要な場合はトークン未返却のため状態更新しない（呼び出し元でMFAページへリダイレクト）
             if (!response.tokens) {
                 return;
             }
@@ -48,6 +49,10 @@ export function useSignup(): UseSignupResult {
             setAuthState({
                 accessToken: response.tokens.accessToken,
                 idToken: response.tokens.idToken,
+                refreshToken: response.tokens.refreshToken ?? null,
+                expiresAt: response.tokens.expiresIn
+                    ? Date.now() + response.tokens.expiresIn * 1000
+                    : null,
                 isAuthenticated: true
             });
         }

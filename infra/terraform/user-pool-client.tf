@@ -1,9 +1,10 @@
 resource "aws_cognito_user_pool_client" "native" {
-  # フロントエンド（SPA）から利用するアプリクライアント
+  # バックエンドから利用するアプリクライアント
+  # NOTE: バックエンド経由のため本来は generate_secret = true が望ましいが MVP では省略
   name         = "${var.project_name}-${var.environment}-native-client"
   user_pool_id = aws_cognito_user_pool.this.id
 
-  # SPAクライアントなのでシークレットは発行しない
+  # シークレットなし（generate_secret = true + SecretHash 対応は MVP 後の課題）
   generate_secret = false
 
   explicit_auth_flows = [
@@ -32,6 +33,9 @@ resource "aws_cognito_user_pool_client" "native" {
   access_token_validity  = 60
   id_token_validity      = 60
   refresh_token_validity = 30
+
+  # Email OTP の入力猶予。Cognito のデフォルト 3 分より長めに確保する
+  auth_session_validity = 15
 
   token_validity_units {
     # トークンごとの有効期限単位

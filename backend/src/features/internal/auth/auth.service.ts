@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
+import { MfaVerifyDto } from './dto/mfa-verify.dto';
+import { SigninDto } from './dto/signin.dto';
 import { SignupDto } from './dto/signup.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { CognitoService } from './cognito.service';
@@ -29,7 +31,7 @@ export class AuthService {
   async signup(payload: SignupDto): Promise<AuthResponse> {
     this.logger.log(`Signup requested for email=${ payload.email }`);
     try {
-      await this.cognitoService.signUp(payload.email, payload.password);
+      await this.cognitoService.signUp(payload.email, payload.password, payload.phoneNumber);
       this.logger.log(`Cognito signup success for email=${ payload.email }`);
       return {
         message: 'Signup successful. Please check your email for verification.',
@@ -54,19 +56,20 @@ export class AuthService {
       this.logger.log(`Cognito confirmSignUp success for email=${ payload.email }`);
 
       const authResult = await this.cognitoService.initiateAuth(payload.email, payload.password);
-      const tokens = this.toAuthTokens(authResult.AuthenticationResult);
-      const cognitoSub = this.extractSubFromIdToken(tokens.idToken);
 
-      await this.prisma.user.upsert({
-        where: { email: payload.email },
-        create: {
-          email: payload.email,
-          cognitoSub
-        },
-        update: {
-          cognitoSub
-        }
-      });
+      // MFAチャレンジが必要な場合はセッションを返す
+      if (authResult.ChallengeName === 'EMAIL_OTP') {
+        this.logger.log(`MFA challenge required for email=${ payload.email }`);
+        return {
+          message: 'Email verified. Please enter the MFA code sent to your email.',
+          mfaRequired: true,
+          session: authResult.Session,
+          email: payload.email
+        };
+      }
+
+      const tokens = this.toAuthTokens(authResult.AuthenticationResult);
+      await this.upsertUser(payload.email, tokens.idToken);
 
       return {
         message: 'Email verified successfully.',
@@ -77,6 +80,115 @@ export class AuthService {
     } catch (error: unknown) {
       throw this.mapCognitoError(error);
     }
+  }
+
+  /**
+   * サインイン処理。メールアドレスとパスワードでCognitoに認証リクエストを送信する。MFAが有効な場合はチャレンジ情報を返す。
+   * @param payload サインイン用DTO
+   * @returns 認証結果またはMFAチャレンジ情報
+   */
+  async signIn(payload: SigninDto): Promise<AuthResponse> {
+    this.logger.log(`SignIn requested for email=${ payload.email }`);
+    try {
+      const authResult = await this.cognitoService.initiateAuth(payload.email, payload.password);
+
+      // MFAチャレンジが必要な場合はセッションを返す
+      if (authResult.ChallengeName === 'EMAIL_OTP') {
+        this.logger.log(`MFA challenge required for email=${ payload.email }`);
+        return {
+          message: 'MFA code sent to your email.',
+          mfaRequired: true,
+          session: authResult.Session,
+          email: payload.email
+        };
+      }
+
+      const tokens = this.toAuthTokens(authResult.AuthenticationResult);
+      await this.upsertUser(payload.email, tokens.idToken);
+
+      return {
+        message: 'Sign-in successful.',
+        tokens
+      };
+    } catch (error: unknown) {
+      throw this.mapCognitoError(error);
+    }
+  }
+
+  /**
+   * MFAコード検証処理。メールで受信したOTPコードをCognitoに送信してトークンを取得する。
+   * @param payload MFA検証用DTO
+   * @returns 認証トークン
+   */
+  async verifyMfa(payload: MfaVerifyDto): Promise<AuthResponse> {
+    this.logger.log(`MFA verify requested for email=${ payload.email }`);
+    try {
+      const authResult = await this.cognitoService.respondToEmailOtp(
+        payload.email,
+        payload.session,
+        payload.code
+      );
+
+      const tokens = this.toAuthTokens(authResult.AuthenticationResult);
+      await this.upsertUser(payload.email, tokens.idToken);
+
+      return {
+        message: 'MFA verification successful.',
+        tokens
+      };
+    } catch (error: unknown) {
+      throw this.mapCognitoError(error);
+    }
+  }
+
+  /**
+   * グローバルサインアウト処理。Cognitoのすべてのデバイスのトークンを無効化する。
+   * @param accessToken 有効なアクセストークン
+   * @returns サインアウト結果
+   */
+  async signOut(accessToken: string): Promise<AuthResponse> {
+    this.logger.log('SignOut requested');
+    try {
+      await this.cognitoService.globalSignOut(accessToken);
+      return { message: 'Sign-out successful.' };
+    } catch (error: unknown) {
+      throw this.mapCognitoError(error);
+    }
+  }
+
+  /**
+   * リフレッシュトークンを使用して新しいアクセストークンとIDトークンを発行する。
+   * @param refreshToken リフレッシュトークン
+   * @returns 新しい認証トークン（リフレッシュトークンは元のものを維持）
+   */
+  async refreshTokens(refreshToken: string): Promise<AuthResponse> {
+    this.logger.log('RefreshTokens requested');
+    try {
+      const authResult = await this.cognitoService.refreshToken(refreshToken);
+      const tokens = this.toAuthTokens(authResult.AuthenticationResult);
+      // リフレッシュフローでは新しいリフレッシュトークンは返却されないため元のものを維持
+      return {
+        message: 'Token refreshed.',
+        tokens: { ...tokens, refreshToken }
+      };
+    } catch (error: unknown) {
+      throw this.mapCognitoError(error);
+    }
+  }
+
+  /**
+   * ユーザー情報をデータベースにupsertする。
+   * @param email ユーザーのメールアドレス
+   * @param idToken IDトークン
+   */
+  private async upsertUser(email: string, idToken: string): Promise<void> {
+    const cognitoSub = this.extractSubFromIdToken(idToken);
+    await this.prisma.user.upsert({
+      where: { email },
+      create: { email, cognitoSub },
+      update: { cognitoSub }
+    });
+    this.logger.log(`User upserted for email=${ email }`);
   }
 
   /**
@@ -171,6 +283,10 @@ export class AuthService {
       case 'UserNotFoundException':
         // 入力が無効な場合やユーザーが見つからない場合はBadRequestExceptionを返す
         return new BadRequestException(cognitoError.message ?? 'Invalid signup input.');
+      case 'EnableSoftwareTokenMFAException':
+      case 'MFAMethodNotFoundException':
+        // MFA設定エラー
+        return new BadRequestException('MFA configuration error.');
       default:
         return new InternalServerErrorException(cognitoError.message ?? 'Authentication service error.');
     }

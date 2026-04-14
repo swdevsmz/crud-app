@@ -57,7 +57,19 @@ export default function VerifyPage(): JSX.Element {
     setSuccess(null);
 
     try {
-      await verifyEmailMutation.mutateAsync(payload);
+      const response = await verifyEmailMutation.mutateAsync(payload);
+
+      // MFAチャレンジが必要な場合はMFA確認ページへ遷移
+      if (response.mfaRequired && response.session) {
+        navigate('/mfa-verify', {
+          state: {
+            email: response.email ?? payload.email,
+            session: response.session
+          }
+        });
+        return;
+      }
+
       setSuccess('Email verified successfully! You are now signed in.');
       setTimeout(() => {
         navigate('/dashboard');
