@@ -7,10 +7,15 @@ environment  = "dev"
 
 # サインアップ検証後の戻り先URL
 callback_urls = [
-  "http://localhost:3000/verify-email"
+  "http://localhost:3000/verify"
 ]
 
 # ログアウト後の遷移先URL
 logout_urls = [
   "http://localhost:3000"
 ]
+
+# Email MFA で利用する SES 設定
+ses_source_arn         = "arn:aws:ses:ap-northeast-1:123456789012:identity/example.com"
+from_email_address     = "no-reply@example.com"
+reply_to_email_address = "support@example.com"
