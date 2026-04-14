@@ -5,11 +5,16 @@ import { useNavigate } from 'react-router-dom';
 import { authStateAtom } from '../../features/auth/model/auth-store';
 import { authService } from '../../features/auth/services/auth-service';
 
+/**
+ * IDトークン（JWT）のペイロードからメールアドレスを取得する。
+ * JWT はピリオド区切りの3パートで構成され、2パート目がBase64エンコードされたペイロード。
+ */
 function decodeEmail(idToken: string | null): string | null {
   if (!idToken) return null;
   try {
     const parts = idToken.split('.');
     if (parts.length < 2) return null;
+    // Base64URLをBase64に変換してからデコード
     const payload = parts[1]
       .replace(/-/g, '+')
       .replace(/_/g, '/')
@@ -26,8 +31,10 @@ export default function DashboardPage(): JSX.Element {
   const [authState, setAuthState] = useAtom(authStateAtom);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
+  // IDトークンからメールアドレスを取得してナビバーに表示する
   const email = decodeEmail(authState.idToken);
 
+  /** 認証状態を初期値にリセットする */
   const clearAuthState = (): void => {
     setAuthState({ accessToken: null, idToken: null, refreshToken: null, expiresAt: null, isAuthenticated: false });
   };
@@ -36,6 +43,7 @@ export default function DashboardPage(): JSX.Element {
     setIsSigningOut(true);
     if (authState.accessToken) {
       try {
+        // Cognito側のすべてのデバイスのトークンを無効化（グローバルサインアウト）
         await authService.signout({ accessToken: authState.accessToken });
       } catch {
         // API 失敗時もローカル状態はクリアして続行
