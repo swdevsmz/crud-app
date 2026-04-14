@@ -23,6 +23,7 @@ export default function MfaVerifyPage(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const { mfaVerifyMutation } = useSignin();
 
+  // サインイン/検証ページから react-router state で渡された email と session を取得
   const locationState = state as MfaLocationState | null;
   const email = locationState?.email ?? '';
   const session = locationState?.session ?? '';
@@ -36,6 +37,7 @@ export default function MfaVerifyPage(): JSX.Element {
     defaultValues: { code: '' }
   });
 
+  // email/session が揃っていない場合は送信不可（直接URLアクセスや期限切れの場合）
   const canSubmit = isValid && !isSubmitting && !mfaVerifyMutation.isPending && Boolean(email) && Boolean(session);
 
   const onSubmit = async ({ code }: MfaFormValues): Promise<void> => {
@@ -48,6 +50,7 @@ export default function MfaVerifyPage(): JSX.Element {
     try {
       const response = await mfaVerifyMutation.mutateAsync({ email, session, code });
 
+      // MFA検証成功時にトークンを認証ストアへ保存してログイン済み状態にする
       if (response.tokens) {
         setAuthState({
           accessToken: response.tokens.accessToken,
@@ -66,6 +69,7 @@ export default function MfaVerifyPage(): JSX.Element {
     }
   };
 
+  // email/session がない状態で直接アクセスした場合のフォールバック表示
   if (!email || !session) {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center p-6">

@@ -31,9 +31,12 @@ export function SignupForm({ onSubmit, isLoading, errorMessage }: SignupFormProp
     }
   });
 
+  // 全バリデーションが通っており、送信・API通信中でなければ送信可能
   const canSubmit = isValid && !isSubmitting && !isLoading;
+  // confirmPassword のバリデーションで元のパスワードと比較するために監視
   const passwordValue = watch('password');
 
+  // confirmPassword を除いた必要フィールドのみ親コンポーネントに渡す
   const submit = async (payload: SignupFormValues): Promise<void> => {
     await onSubmit({
       email: payload.email,

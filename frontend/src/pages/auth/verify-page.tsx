@@ -12,7 +12,9 @@ import { FormField } from '../../shared/ui/form-field';
 export default function VerifyPage(): JSX.Element {
   const navigate = useNavigate();
   const { search, state } = useLocation();
+  // サインアップページからクエリパラメータで渡されたメールアドレスを取得
   const emailFromQuery = new URLSearchParams(search).get('email') ?? '';
+  // サインアップページからreact-router stateで渡された成功メッセージを取得
   const signupSuccessMessage =
     typeof state === 'object' && state && 'signupSuccessMessage' in state
       ? String((state as { signupSuccessMessage?: string }).signupSuccessMessage ?? '')
@@ -37,12 +39,14 @@ export default function VerifyPage(): JSX.Element {
     }
   });
 
+  // クエリパラメータのメールアドレスをフォームにセット（初回マウント時）
   useEffect(() => {
     if (emailFromQuery) {
       setValue('email', emailFromQuery, { shouldValidate: true });
     }
   }, [emailFromQuery, setValue]);
 
+  // サインアップページから引き継いだ成功メッセージを表示
   useEffect(() => {
     if (signupSuccessMessage) {
       setSuccess(signupSuccessMessage);
@@ -50,6 +54,7 @@ export default function VerifyPage(): JSX.Element {
   }, [signupSuccessMessage]);
 
   const canSubmit = isValid && !isSubmitting;
+  // Back to signup ボタンのリンク生成に使用
   const emailValue = watch('email');
 
   const onSubmit = async (payload: VerifyEmailRequest): Promise<void> => {

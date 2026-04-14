@@ -1,5 +1,9 @@
 import axios from 'axios';
 
+/**
+ * Cognitoエラーコードをユーザー向けの日本語メッセージに変換するマップ。
+ * バックエンドがCognitoのエラーをそのまま返す場合に備えてフロントでも変換する。
+ */
 const COGNITO_ERROR_MAP: Record<string, string> = {
     UsernameExistsException: 'このメールアドレスはすでに登録されています。',
     UserNotFoundException: 'メールアドレスまたはパスワードが正しくありません。',
@@ -13,6 +17,10 @@ const COGNITO_ERROR_MAP: Record<string, string> = {
     UserNotConfirmedException: 'メールアドレスの確認が完了していません。確認コードを入力してください。',
 };
 
+/**
+ * エラーメッセージ文字列にCognitoエラーコードが含まれていれば日本語に変換する。
+ * 該当するコードがなければ null を返す（呼び出し元で元のメッセージを使う）。
+ */
 function translateCognitoError(message: string): string | null {
     // Cognito validation error (e.g. missing clientId due to misconfiguration)
     if (message.includes('validation errors detected') || message.includes('clientId')) {
@@ -28,6 +36,10 @@ function translateCognitoError(message: string): string | null {
     return null;
 }
 
+/**
+ * API呼び出しで発生したエラーからユーザー表示用メッセージを返す。
+ * Axiosエラー → Cognitoエラー変換 → Error.message → fallback の順で処理する。
+ */
 export function getApiErrorMessage(error: unknown, fallback: string): string {
     if (axios.isAxiosError(error)) {
         const responseData = error.response?.data as { message?: string } | undefined;

@@ -10,6 +10,7 @@ import { FormField } from '../../shared/ui/form-field';
 
 export default function SigninPage(): JSX.Element {
   const navigate = useNavigate();
+  // サーバーまたはバリデーション由来のエラーメッセージ
   const [error, setError] = useState<string | null>(null);
   const { signinMutation } = useSignin();
 
@@ -18,10 +19,12 @@ export default function SigninPage(): JSX.Element {
     handleSubmit,
     formState: { errors, isValid, isSubmitting }
   } = useForm<SigninRequest>({
+    // onChange モードで入力のたびにバリデーションを実行
     mode: 'onChange',
     defaultValues: { email: '', password: '' }
   });
 
+  // 全バリデーションが通っており、送信・API通信中でなければ送信可能
   const canSubmit = isValid && !isSubmitting && !signinMutation.isPending;
 
   const onSubmit = async (payload: SigninRequest): Promise<void> => {
